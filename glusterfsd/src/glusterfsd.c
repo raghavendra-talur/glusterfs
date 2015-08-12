@@ -1965,7 +1965,7 @@ glusterfs_sigwaiter (void *arg)
                         reincarnate (sig);
                         break;
                 case SIGUSR1:
-                        gf_proc_dump_info (sig);
+                        gf_proc_dump_info (sig, glusterfsd_ctx);
                         break;
                 case SIGUSR2:
                         gf_latency_toggle (sig, glusterfsd_ctx);

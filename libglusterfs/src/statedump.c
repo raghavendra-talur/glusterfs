@@ -35,8 +35,6 @@
 #define GF_PROC_DUMP_IS_XL_OPTION_ENABLED(opt)                  \
         (dump_options.xl_options.dump_##opt == _gf_true)
 
-extern xlator_t global_xlator;
-
 static pthread_mutex_t  gf_proc_dump_mutex;
 static int gf_dump_fd = -1;
 gf_dump_options_t dump_options;
@@ -316,7 +314,7 @@ gf_proc_dump_mem_info ()
         gf_proc_dump_write ("mallinfo_fordblks", "%d", info.fordblks);
         gf_proc_dump_write ("mallinfo_keepcost", "%d", info.keepcost);
 #endif
-        gf_proc_dump_xlator_mem_info(&global_xlator);
+        gf_proc_dump_xlator_mem_info(process_ctx.global_xlator);
 
 }
 
@@ -376,13 +374,13 @@ gf_proc_dump_mem_info_to_dict (dict_t *dict)
 }
 
 void
-gf_proc_dump_mempool_info (glusterfs_ctx_t *ctx)
+gf_proc_dump_mempool_info ()
 {
         struct mem_pool *pool = NULL;
 
         gf_proc_dump_add_section ("mempool");
 
-        list_for_each_entry (pool, &ctx->mempool_list, global_list) {
+        list_for_each_entry (pool, &process_ctx.rp.mempool_list, global_list) {
                 gf_proc_dump_write ("-----", "-----");
                 gf_proc_dump_write ("pool-name", "%s", pool->name);
                 gf_proc_dump_write ("hot-count", "%d", pool->hot_count);
@@ -399,17 +397,17 @@ gf_proc_dump_mempool_info (glusterfs_ctx_t *ctx)
 }
 
 void
-gf_proc_dump_mempool_info_to_dict (glusterfs_ctx_t *ctx, dict_t *dict)
+gf_proc_dump_mempool_info_to_dict (dict_t *dict)
 {
         struct mem_pool *pool = NULL;
         char            key[GF_DUMP_MAX_BUF_LEN] = {0,};
         int             count = 0;
         int             ret = -1;
 
-        if (!ctx || !dict)
+        if (!dict)
                 return;
 
-        list_for_each_entry (pool, &ctx->mempool_list, global_list) {
+        list_for_each_entry (pool, &process_ctx.rp.mempool_list, global_list) {
                 memset (key, 0, sizeof (key));
                 snprintf (key, sizeof (key), "pool%d.name", count);
                 ret = dict_set_str (dict, key, pool->name);
@@ -469,9 +467,9 @@ void gf_proc_dump_latency_info (xlator_t *xl);
 void
 gf_proc_dump_xlator_info (xlator_t *top)
 {
-        xlator_t        *trav = NULL;
-        glusterfs_ctx_t *ctx = NULL;
-        char             itable_key[1024] = {0,};
+        xlator_t            *trav = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
+        char                 itable_key[1024] = {0,};
 
         if (!top)
                 return;
@@ -757,7 +755,7 @@ gf_proc_dump_options_init ()
 }
 
 void
-gf_proc_dump_info (int signum, glusterfs_ctx_t *ctx)
+gf_proc_dump_info (int signum, glusterfs_vol_ctx_t *ctx)
 {
         int                i                       = 0;
         int                ret                     = -1;
@@ -771,10 +769,7 @@ gf_proc_dump_info (int signum, glusterfs_ctx_t *ctx)
 
         gf_proc_dump_lock ();
 
-        if (!ctx)
-                goto out;
-
-        if (ctx->cmd_args.brick_name) {
+        if (ctx && ctx->cmd_args.brick_name) {
                 GF_REMOVE_SLASH_FROM_PATH (ctx->cmd_args.brick_name, brick_name);
         } else
                 strncpy (brick_name, "glusterdump", sizeof (brick_name));
@@ -785,13 +780,13 @@ gf_proc_dump_info (int signum, glusterfs_ctx_t *ctx)
 
         snprintf (path, sizeof (path), "%s/%s.%d.dump.%"PRIu64,
                   ((dump_options.dump_path != NULL)?dump_options.dump_path:
-                   ((ctx->statedump_path != NULL)?ctx->statedump_path:
+                   ((process_ctx.statedump_path != NULL)?process_ctx.statedump_path:
                     DEFAULT_VAR_RUN_DIRECTORY)), brick_name, getpid(),
                   (uint64_t) time (NULL));
 
         snprintf (tmp_dump_name, PATH_MAX, "%s/dumpXXXXXX",
                   ((dump_options.dump_path != NULL)?dump_options.dump_path:
-                   ((ctx->statedump_path != NULL)?ctx->statedump_path:
+                   ((process_ctx.statedump_path != NULL)?process_ctx.statedump_path:
                     DEFAULT_VAR_RUN_DIRECTORY)));
 
         ret = gf_proc_dump_open (tmp_dump_name);
@@ -823,7 +818,7 @@ gf_proc_dump_info (int signum, glusterfs_ctx_t *ctx)
         }
 
         if (GF_PROC_DUMP_IS_OPTION_ENABLED (iobuf))
-                iobuf_stats_dump (ctx->iobuf_pool);
+                iobuf_stats_dump (process_ctx.rp.iobuf_pool);
         if (GF_PROC_DUMP_IS_OPTION_ENABLED (callpool))
                 gf_proc_dump_pending_frames (ctx->pool);
 
