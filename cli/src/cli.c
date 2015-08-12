@@ -87,88 +87,6 @@ rpc_clnt_prog_t *cli_rpc_prog;
 extern struct rpc_clnt_program cli_prog;
 
 static int
-glusterfs_ctx_defaults_init (glusterfs_ctx_t *ctx)
-{
-        cmd_args_t    *cmd_args = NULL;
-        struct rlimit  lim = {0, };
-        call_pool_t   *pool = NULL;
-        int            ret         = -1;
-
-        ret = xlator_mem_acct_init (THIS, cli_mt_end);
-        if (ret != 0) {
-                return ret;
-        }
-
-        ctx->process_uuid = generate_glusterfs_ctx_id ();
-        if (!ctx->process_uuid)
-                return -1;
-
-        ctx->page_size  = 128 * GF_UNIT_KB;
-
-        ctx->iobuf_pool = iobuf_pool_new ();
-        if (!ctx->iobuf_pool)
-                return -1;
-
-        ctx->event_pool = event_pool_new (DEFAULT_EVENT_POOL_SIZE,
-                                          STARTING_EVENT_THREADS);
-        if (!ctx->event_pool)
-                return -1;
-
-        pool = GF_CALLOC (1, sizeof (call_pool_t),
-                          cli_mt_call_pool_t);
-        if (!pool)
-                return -1;
-
-        /* frame_mem_pool size 112 * 64 */
-        pool->frame_mem_pool = mem_pool_new (call_frame_t, 32);
-        if (!pool->frame_mem_pool)
-                return -1;
-
-        /* stack_mem_pool size 256 * 128 */
-        pool->stack_mem_pool = mem_pool_new (call_stack_t, 16);
-
-        if (!pool->stack_mem_pool)
-                return -1;
-
-        ctx->stub_mem_pool = mem_pool_new (call_stub_t, 16);
-        if (!ctx->stub_mem_pool)
-                return -1;
-
-        ctx->dict_pool = mem_pool_new (dict_t, 32);
-        if (!ctx->dict_pool)
-                return -1;
-
-        ctx->dict_pair_pool = mem_pool_new (data_pair_t, 512);
-        if (!ctx->dict_pair_pool)
-                return -1;
-
-        ctx->dict_data_pool = mem_pool_new (data_t, 512);
-        if (!ctx->dict_data_pool)
-                return -1;
-
-        ctx->logbuf_pool = mem_pool_new (log_buf_t, 256);
-        if (!ctx->logbuf_pool)
-                return -1;
-
-        INIT_LIST_HEAD (&pool->all_frames);
-        LOCK_INIT (&pool->lock);
-        ctx->pool = pool;
-
-        pthread_mutex_init (&(ctx->lock), NULL);
-
-        cmd_args = &ctx->cmd_args;
-
-        INIT_LIST_HEAD (&cmd_args->xlator_options);
-
-        lim.rlim_cur = RLIM_INFINITY;
-        lim.rlim_max = RLIM_INFINITY;
-        setrlimit (RLIMIT_CORE, &lim);
-
-        return 0;
-}
-
-
-static int
 logging_init (glusterfs_ctx_t *ctx, struct cli_state *state)
 {
         char *log_file = state->log_file ? state->log_file :
@@ -675,6 +593,164 @@ cli_local_wipe (cli_local_t *local)
         return;
 }
 
+static glusterfs_vol_ctx_t *
+glusterfs_new_vol_ctx (int argc, char *argv[])
+{
+        glusterfs_vol_ctx_t *ctx      = NULL;
+        int                  ret      = -1;
+        cmd_args_t          *cmd_args = NULL;
+        call_pool_t         *pool     = NULL;
+
+        ctx = GF_CALLOC (1, sizeof (glusterfs_vol_ctx_t), gf_common_mt_vol_ctx_t);
+        if (!ctx) {
+                errno = ENOMEM;
+                gf_msg ();
+                goto out;
+        }
+
+        pthread_mutex_init (&(ctx->lock), NULL);
+
+        THIS = &ctx->init_xlator;
+        THIS->ctx = ctx;
+
+        ctx->process_uuid = generate_glusterfs_ctx_id ();
+        if (!ctx->process_uuid) {
+                gf_msg ("", GF_LOG_CRITICAL, 0, glusterfsd_msg_13);
+                goto out;
+        }
+
+        ctx->pool = GF_CALLOC (1, sizeof (call_pool_t), gfd_mt_call_pool_t);
+        if (!ctx->pool) {
+                gf_msg ("", GF_LOG_CRITICAL, 0, glusterfsd_msg_14, "call");
+                goto out;
+        }
+
+        INIT_LIST_HEAD (&(ctx->poo)l->all_frames);
+        LOCK_INIT (&(ctx->pool->lock));
+
+        /* frame_mem_pool size 112 * 4k */
+        ctx->pool->frame_mem_pool = mem_pool_new (call_frame_t, 4096);
+        if (!ctx->pool->frame_mem_pool) {
+                gf_msg ("", GF_LOG_CRITICAL, 0, glusterfsd_msg_14, "frame");
+                goto out;
+        }
+        /* stack_mem_pool size 256 * 1024 */
+        ctx->pool->stack_mem_pool = mem_pool_new (call_stack_t, 1024);
+        if (!ctx->pool->stack_mem_pool) {
+                gf_msg ("", GF_LOG_CRITICAL, 0, glusterfsd_msg_14, "stack");
+                goto out;
+        }
+
+        cmd_args = &ctx->cmd_args;
+
+        INIT_LIST_HEAD (&cmd_args->xlator_options);
+
+        list_add_tail (&process_ctx->instances, &ctx->list);
+
+        ret = 0;
+
+out:
+        if (ret < 0) {
+                glusterfs_ctx_free (ctx);
+                ctx = NULL;
+        }
+        return ctx;
+}
+
+static int
+glusterfs_resource_pool_init ()
+{
+        int    ret = 0;
+
+        process_ctx.page_size  = 128 * GF_UNIT_KB;
+
+        ctx->iobuf_pool = iobuf_pool_new ();
+        if (!ctx->iobuf_pool)
+                return -1;
+
+        ctx->event_pool = event_pool_new (DEFAULT_EVENT_POOL_SIZE,
+                                          STARTING_EVENT_THREADS);
+        if (!ctx->event_pool)
+                return -1;
+
+        ctx->stub_mem_pool = mem_pool_new (call_stub_t, 16);
+        if (!ctx->stub_mem_pool)
+                return -1;
+
+        ctx->dict_pool = mem_pool_new (dict_t, 32);
+        if (!ctx->dict_pool)
+                return -1;
+
+        ctx->dict_pair_pool = mem_pool_new (data_pair_t, 512);
+        if (!ctx->dict_pair_pool)
+                return -1;
+
+        ctx->dict_data_pool = mem_pool_new (data_t, 512);
+        if (!ctx->dict_data_pool)
+                return -1;
+
+        ctx->logbuf_pool = mem_pool_new (log_buf_t, 256);
+        if (!ctx->logbuf_pool)
+                return -1;
+
+        if (gf_timer_registry_init() == NULL)
+                goto out;
+
+        return ret;
+}
+
+static int
+glusterfs_init_process_ctx ()
+{
+        int                  ret = -1;
+        struct rlimit        lim = {0, };
+
+        pthread_mutex_lock (&process_ctx.lock);
+        {
+                if (process_ctx.init != PROCESS_CTX_UNINIT) {
+                        ret = 0;
+                        goto unlock;
+                }
+#ifdef DEBUG
+                process_ctx.mem_acct_enable = gf_global_mem_acct_enable_get ();
+#endif
+                lim.rlim_cur = RLIM_INFINITY;
+                lim.rlim_max = RLIM_INFINITY;
+                setrlimit (RLIMIT_CORE, &lim);
+
+                ret = glusterfs_globals_init ();
+                if (ret) {
+                        goto out;
+                }
+
+                process_ctx.global_xlator = CALLOC (1, sizeof (xlator_t));
+                if (!process_ctx.global_xlator) {
+                        goto unlock;
+                }
+                THIS = &process_ctx.global_xlator;
+                THIS->ctx = NULL;
+
+                ret = xlator_mem_acct_init (THIS, gf_common_mt_end);
+                if (ret != 0) {
+                        goto unlock;
+                }
+
+                INIT_LIST_HEAD (&process_ctx.instances);
+
+                glusterfs_resource_pool_init ();
+
+                process_ctx.init = PROCESS_CTX_INIT;
+                ret = 0;
+unlock:
+        }
+        pthread_mutex_unlock (&process_ctx.lock);
+
+        if (ret < 0)
+                glusterfs_clean_process_ctx ();
+
+        return ret;
+}
+
 struct cli_state *global_state;
 
 int
@@ -684,22 +760,12 @@ main (int argc, char *argv[])
         int                ret = -1;
         glusterfs_ctx_t   *ctx = NULL;
 
-        ctx = glusterfs_ctx_new ();
-        if (!ctx)
+        ret = glusterfs_init_process_ctx (argc, argv);
+        if (ret)
                 return ENOMEM;
 
-#ifdef DEBUG
-        gf_mem_acct_enable_set (ctx);
-#endif
-
-        ret = glusterfs_globals_init (ctx);
-        if (ret)
-                return ret;
-
-	THIS->ctx = ctx;
-
-        ret = glusterfs_ctx_defaults_init (ctx);
-        if (ret)
+        ctx = glusterfs_new_vol_ctx ();
+        if (!ctx)
                 goto out;
 
         ret = cli_state_init (&state);
