@@ -348,6 +348,49 @@ struct invocable invocables[] = {
         { NULL, NULL}
 };
 
+#ifdef USE_LIBGLUSTERFS
+static int
+glusterfs_init_process_ctx ()
+{
+        int                  ret = -1;
+        struct rlimit        lim = {0, };
+
+        pthread_mutex_lock (&process_ctx.lock);
+        {
+                if (process_ctx.init != PROCESS_CTX_UNINIT) {
+                        ret = 0;
+                        goto unlock;
+                }
+                ret = glusterfs_globals_init ();
+                if (ret) {
+                        goto unlock;
+                }
+
+                process_ctx.global_xlator = CALLOC (1, sizeof (xlator_t));
+                if (!process_ctx.global_xlator) {
+                        goto unlock;
+                }
+                THIS = &process_ctx.global_xlator;
+                THIS->ctx = NULL;
+
+                ret = default_mem_acct_init (THIS);
+                if (ret != 0) {
+                        goto unlock;
+                }
+
+                process_ctx.init = PROCESS_CTX_INIT;
+                ret = 0;
+unlock:
+        }
+        pthread_mutex_unlock (&process_ctx.lock);
+
+        if (ret < 0)
+                glusterfs_clean_process_ctx ();
+
+        return ret;
+}
+#endif
+
 int
 main (int argc, char **argv)
 {
@@ -359,19 +402,9 @@ main (int argc, char **argv)
         int               j     = 0;
 
 #ifdef USE_LIBGLUSTERFS
-        glusterfs_ctx_t *ctx = NULL;
-
-        ctx = glusterfs_ctx_new ();
-        if (!ctx)
-                return ENOMEM;
-
-        if (glusterfs_globals_init (ctx))
-                return 1;
-
-        THIS->ctx = ctx;
-        ret = default_mem_acct_init (THIS);
+        ret = glusterfs_init_process_ctx ();
         if (ret) {
-                fprintf (stderr, "internal error: mem accounting failed\n");
+                fprintf (stderr, "internal error: initing process_ctx failed\n");
                 return 1;
         }
 #endif
