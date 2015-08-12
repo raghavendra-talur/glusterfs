@@ -184,13 +184,12 @@ typedef struct rpc_clnt {
 
         struct mem_pool       *saved_frames_pool;
 
-        glusterfs_ctx_t       *ctx;
+        glusterfs_vol_ctx_t  *ctx;
         int                   refcount;
         int                   auth_null;
         char                  disabled;
         xlator_t             *owner;
 } rpc_clnt_t;
-
 
 struct rpc_clnt *rpc_clnt_new (dict_t *options, xlator_t *owner,
                                char *name, uint32_t reqpool_size);

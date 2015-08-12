@@ -2901,7 +2901,7 @@ posix_readv (call_frame_t *frame, xlator_t *this,
                 goto out;
         }
 
-        iobuf = iobuf_get2 (this->ctx->iobuf_pool, size);
+        iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, size);
         if (!iobuf) {
                 op_errno = ENOMEM;
                 goto out;

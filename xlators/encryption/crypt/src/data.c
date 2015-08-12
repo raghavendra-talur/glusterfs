@@ -316,7 +316,7 @@ static char *data_alloc_block(xlator_t *this, crypt_local_t *local,
 {
 	struct iobuf *iobuf = NULL;
 
-	iobuf = iobuf_get2(this->ctx->iobuf_pool, block_size);
+	iobuf = iobuf_get2(process_ctx.rp.iobuf_pool, block_size);
 	if (!iobuf) {
 		gf_log("crypt", GF_LOG_ERROR,
 		       "Failed to get iobuf");

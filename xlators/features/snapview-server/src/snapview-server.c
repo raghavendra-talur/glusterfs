@@ -1997,7 +1997,7 @@ svs_readv (call_frame_t *frame, xlator_t *this,
 
         glfd = sfd->fd;
 
-        iobuf = iobuf_get2 (this->ctx->iobuf_pool, size);
+        iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, size);
         if (!iobuf) {
                 op_ret = -1;
                 op_errno = ENOMEM;
@@ -2282,9 +2282,9 @@ out:
 void
 fini (xlator_t *this)
 {
-        svs_private_t   *priv   = NULL;
-        glusterfs_ctx_t *ctx    = NULL;
-        int             ret     = 0;
+        svs_private_t       *priv   = NULL;
+        glusterfs_vol_ctx_t *ctx    = NULL;
+        int                  ret     = 0;
 
         GF_ASSERT (this);
         priv = this->private;

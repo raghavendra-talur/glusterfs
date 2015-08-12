@@ -23,6 +23,6 @@ typedef struct fop_latency {
 } fop_latency_t;
 
 void
-gf_latency_toggle (int signum, glusterfs_ctx_t *ctx);
+gf_latency_toggle (int signum, glusterfs_vol_ctx_t *ctx);
 
 #endif /* __LATENCY_H__ */

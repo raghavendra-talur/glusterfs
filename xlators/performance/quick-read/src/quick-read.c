@@ -563,7 +563,7 @@ qr_readv_cached (call_frame_t *frame, qr_inode_t *qr_inode, size_t size,
 
 		op_ret = min (size, (qr_inode->size - offset));
 
-		iobuf = iobuf_get2 (this->ctx->iobuf_pool, op_ret);
+		iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, op_ret);
 		if (!iobuf) {
 			op_ret = -1;
 			goto unlock;

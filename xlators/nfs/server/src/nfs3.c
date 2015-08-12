@@ -5677,7 +5677,7 @@ nfs3_init_state (xlator_t *nfsx)
                 goto ret;
         }
 
-        nfs3->iobpool = nfsx->ctx->iobuf_pool;
+        nfs3->iobpool = process_ctx.rp.iobuf_pool;
 
         localpool = nfs->memfactor * GF_NFS_CONCURRENT_OPS_MULT;
         gf_msg_trace (GF_NFS3, 0, "local pool: %d", localpool);

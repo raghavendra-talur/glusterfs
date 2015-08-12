@@ -30,7 +30,7 @@ quotad_serialize_reply (rpcsvc_request_t *req, void *arg, struct iovec *outmsg,
          */
         if (arg && xdrproc) {
                 xdr_size = xdr_sizeof (xdrproc, arg);
-                iob = iobuf_get2 (req->svc->ctx->iobuf_pool, xdr_size);
+                iob = iobuf_get2 (process_ctx.rp.iobuf_pool, xdr_size);
                 if (!iob) {
                         gf_log_callingfn (THIS->name, GF_LOG_ERROR,
                                           "Failed to get iobuf");

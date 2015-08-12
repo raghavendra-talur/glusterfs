@@ -328,7 +328,7 @@ glusterd_submit_request (struct rpc_clnt *rpc, void *req,
 
         if (req) {
                 req_size = xdr_sizeof (xdrproc, req);
-                iobuf = iobuf_get2 (this->ctx->iobuf_pool, req_size);
+                iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, req_size);
                 if (!iobuf) {
                         goto out;
                 };
@@ -392,7 +392,7 @@ glusterd_serialize_reply (rpcsvc_request_t *req, void *arg,
          * be serialized.
          */
         rsp_size = xdr_sizeof (xdrproc, arg);
-        iob = iobuf_get2 (req->svc->ctx->iobuf_pool, rsp_size);
+        iob = iobuf_get2 (process_ctx.rp.iobuf_pool, rsp_size);
         if (!iob) {
                 gf_msg ("glusterd", GF_LOG_ERROR, ENOMEM,
                         GD_MSG_NO_MEMORY,
@@ -10388,7 +10388,7 @@ glusterd_launch_synctask (synctask_fn_t fn, void *opaque)
 
         /* synclock_lock must be called from within synctask, @fn must call it before
          * it starts with its work*/
-        ret = synctask_new (this->ctx->env, fn, gd_default_synctask_cbk, NULL,
+        ret = synctask_new (process_ctx.rp.env, fn, gd_default_synctask_cbk, NULL,
                             opaque);
         if (ret)
                 gf_msg (this->name, GF_LOG_CRITICAL, 0,

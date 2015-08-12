@@ -678,7 +678,7 @@ gf_dump_config_flags ()
 
 /* Obtain a backtrace and print it to the log */
 void
-gf_print_trace (int32_t signum, glusterfs_ctx_t *ctx)
+gf_print_trace (int32_t signum, glusterfs_vol_ctx_t *ctx)
 {
         char         msg[1024] = {0,};
         char         timestr[64] = {0,};
@@ -3779,7 +3779,7 @@ gf_backtrace_save (char *buf)
         char *bt = NULL;
 
         if (!buf) {
-                bt = THIS->ctx->btbuf;
+                bt = process_ctx.btbuf;
                 GF_ASSERT (bt);
 
         } else {

@@ -76,6 +76,8 @@
 #define THIS (*__glusterfs_this_location())
 #define DECLARE_OLD_THIS        xlator_t *old_THIS = THIS
 
+extern glusterfs_process_ctx_t process_ctx;
+
 xlator_t **__glusterfs_this_location ();
 xlator_t *glusterfs_this_get ();
 int glusterfs_this_set (xlator_t *);
@@ -94,7 +96,7 @@ char *glusterfs_uuid_buf_get ();
 char *glusterfs_lkowner_buf_get ();
 
 /* init */
-int glusterfs_globals_init (glusterfs_ctx_t *ctx);
+int glusterfs_globals_init ();
 
 extern const char *gf_fop_list[];
 

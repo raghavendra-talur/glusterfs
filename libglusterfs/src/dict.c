@@ -37,7 +37,7 @@ get_new_data ()
 {
         data_t *data = NULL;
 
-        data = mem_get0 (THIS->ctx->dict_data_pool);
+        data = mem_get0 (process_ctx.rp.dict_data_pool);
         if (!data) {
                 return NULL;
         }
@@ -49,7 +49,7 @@ get_new_data ()
 dict_t *
 get_new_dict_full (int size_hint)
 {
-        dict_t *dict = mem_get0 (THIS->ctx->dict_pool);
+        dict_t *dict = mem_get0 (process_ctx.rp.dict_pool);
 
         if (!dict) {
                 return NULL;
@@ -77,7 +77,7 @@ get_new_dict_full (int size_hint)
                  */
                 GF_ASSERT (size_hint <=
                            (sizeof(data_pair_t) / sizeof(data_pair_t *)));
-                dict->members = mem_get0 (THIS->ctx->dict_pair_pool);
+                dict->members = mem_get0 (process_ctx.rp.dict_pair_pool);
                 if (!dict->members) {
                         mem_put (dict);
                         return NULL;
@@ -240,7 +240,7 @@ data_copy (data_t *old)
                 return NULL;
         }
 
-        data_t *newdata = mem_get0 (THIS->ctx->dict_data_pool);
+        data_t *newdata = mem_get0 (process_ctx.rp.dict_data_pool);
         if (!newdata) {
                 return NULL;
         }
@@ -357,7 +357,7 @@ dict_set_lk (dict_t *this, char *key, data_t *value, gf_boolean_t replace)
         }
 
         if (this->free_pair_in_use) {
-                pair = mem_get0 (THIS->ctx->dict_pair_pool);
+                pair = mem_get0 (process_ctx.rp.dict_pair_pool);
                 if (!pair) {
                         if (key_free)
                                 GF_FREE (key);

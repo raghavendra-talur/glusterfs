@@ -12,14 +12,14 @@
 #include "timer-wheel.h"
 
 int
-glusterfs_global_timer_wheel_init (glusterfs_ctx_t *ctx)
+glusterfs_global_timer_wheel_init ()
 {
-        ctx->timer_wheel = gf_tw_init_timers();
-        return ctx->timer_wheel ? 0 : -1;
+        process_ctx.rp.timer_wheel = gf_tw_init_timers();
+        return process_ctx.rp.timer_wheel ? 0 : -1;
 }
 
 struct tvec_base *
 glusterfs_global_timer_wheel (xlator_t *this)
 {
-        return this->ctx->timer_wheel;
+        return process_ctx.rp.timer_wheel;
 }

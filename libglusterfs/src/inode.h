@@ -108,7 +108,7 @@ inode_table_t *
 inode_table_new (size_t lru_limit, xlator_t *xl);
 
 void
-inode_table_destroy_all (glusterfs_ctx_t *ctx);
+inode_table_destroy_all (glusterfs_vol_ctx_t *ctx);
 
 void
 inode_table_destroy (inode_table_t *inode_table);

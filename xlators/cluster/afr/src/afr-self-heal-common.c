@@ -1495,7 +1495,7 @@ afr_heal_synctask (xlator_t *this, afr_local_t *local)
         call_frame_t *heal_frame = NULL;
 
         heal_frame = local->heal_frame;
-        ret = synctask_new (this->ctx->env, afr_refresh_selfheal_wrap,
+        ret = synctask_new (process_ctx.rp.env, afr_refresh_selfheal_wrap,
                             afr_refresh_heal_done, heal_frame, heal_frame);
         if (ret < 0)
                 /* Heal not launched. Will be queued when the next inode

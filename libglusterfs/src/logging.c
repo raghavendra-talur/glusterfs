@@ -52,10 +52,10 @@ void
 gf_log_flush_timeout_cbk (void *data);
 
 int
-gf_log_inject_timer_event (glusterfs_ctx_t *ctx);
+gf_log_inject_timer_event (glusterfs_vol_ctx_t *ctx);
 
 static void
-gf_log_flush_extra_msgs (glusterfs_ctx_t *ctx, uint32_t new);
+gf_log_flush_extra_msgs (glusterfs_vol_ctx_t *ctx, uint32_t new);
 
 static char *gf_level_strings[] = {"",  /* NONE */
                 "M", /* EMERGENCY */
@@ -83,7 +83,7 @@ struct _log_msg {
 void
 gf_log_logrotate (int signum)
 {
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
 
         ctx = THIS->ctx;
 
@@ -96,7 +96,7 @@ gf_log_logrotate (int signum)
 void
 gf_log_enable_syslog (void)
 {
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
 
         ctx = THIS->ctx;
 
@@ -107,7 +107,7 @@ gf_log_enable_syslog (void)
 void
 gf_log_disable_syslog (void)
 {
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
 
         ctx = THIS->ctx;
 
@@ -118,7 +118,7 @@ gf_log_disable_syslog (void)
 gf_loglevel_t
 gf_log_get_loglevel (void)
 {
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
 
         ctx = THIS->ctx;
 
@@ -132,7 +132,7 @@ gf_log_get_loglevel (void)
 void
 gf_log_set_loglevel (gf_loglevel_t level)
 {
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
 
         ctx = THIS->ctx;
 
@@ -144,7 +144,7 @@ void
 gf_log_flush (void)
 {
         xlator_t        *this           = NULL;
-        glusterfs_ctx_t *ctx            = NULL;
+        glusterfs_vol_ctx_t *ctx            = NULL;
 
         this = THIS;
         ctx = this->ctx;
@@ -188,7 +188,7 @@ gf_log_set_xl_loglevel (void *this, gf_loglevel_t level)
 gf_log_format_t
 gf_log_get_logformat (void)
 {
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
 
         ctx = THIS->ctx;
 
@@ -202,7 +202,7 @@ gf_log_get_logformat (void)
 void
 gf_log_set_logformat (gf_log_format_t format)
 {
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
 
         ctx = THIS->ctx;
 
@@ -213,7 +213,7 @@ gf_log_set_logformat (gf_log_format_t format)
 gf_log_logger_t
 gf_log_get_logger (void)
 {
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
 
         ctx = THIS->ctx;
 
@@ -227,7 +227,7 @@ gf_log_get_logger (void)
 void
 gf_log_set_logger (gf_log_logger_t logger)
 {
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
 
         ctx = THIS->ctx;
 
@@ -247,8 +247,8 @@ gf_log_get_xl_loglevel (void *this)
 void
 gf_log_set_log_buf_size (uint32_t buf_size)
 {
-        uint32_t          old = 0;
-        glusterfs_ctx_t  *ctx = THIS->ctx;
+        uint32_t              old = 0;
+        glusterfs_vol_ctx_t  *ctx = THIS->ctx;
 
         pthread_mutex_lock (&ctx->log.log_buf_lock);
         {
@@ -281,7 +281,7 @@ log_buf_new ()
 {
         log_buf_t  *buf  = NULL;
 
-        buf = mem_get0 (THIS->ctx->logbuf_pool);
+        buf = mem_get0 (process_ctx.rp.logbuf_pool);
 
         return buf;
 }
@@ -346,7 +346,7 @@ log_buf_destroy (log_buf_t *buf)
 }
 
 static void
-gf_log_rotate(glusterfs_ctx_t *ctx)
+gf_log_rotate(glusterfs_vol_ctx_t *ctx)
 {
         int            fd   = -1;
         FILE          *new_logfile = NULL;
@@ -411,7 +411,7 @@ gf_log_globals_fini (void)
 }
 
 void
-gf_log_disable_suppression_before_exit (glusterfs_ctx_t *ctx)
+gf_log_disable_suppression_before_exit (glusterfs_vol_ctx_t *ctx)
 {
         /*
          * First set log buf size to 0. This would ensure two things:
@@ -442,9 +442,9 @@ gf_log_disable_suppression_before_exit (glusterfs_ctx_t *ctx)
 int
 gf_log_fini (void *data)
 {
-        glusterfs_ctx_t *ctx = data;
-        int              ret = 0;
-        FILE            *old_logfile = NULL;
+        glusterfs_vol_ctx_t *ctx = data;
+        int                  ret = 0;
+        FILE                *old_logfile = NULL;
 
         if (ctx == NULL) {
 	        ret = -1;
@@ -644,7 +644,7 @@ gf_syslog (int facility_priority, char *format, ...)
 void
 gf_log_globals_init (void *data)
 {
-        glusterfs_ctx_t *ctx = data;
+        glusterfs_vol_ctx_t *ctx = data;
 
         pthread_mutex_init (&ctx->log.logfile_mutex, NULL);
 
@@ -671,9 +671,9 @@ gf_log_globals_init (void *data)
 int
 gf_log_init (void *data, const char *file, const char *ident)
 {
-        glusterfs_ctx_t *ctx = NULL;
-        int              fd = -1;
-        struct stat      buf;
+        glusterfs_vol_ctx_t *ctx = NULL;
+        int                  fd = -1;
+        struct stat          buf;
 
         ctx = data;
 
@@ -762,7 +762,7 @@ out:
 void
 set_sys_log_level (gf_loglevel_t level)
 {
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
 
         ctx = THIS->ctx;
 
@@ -785,7 +785,7 @@ _gf_log_callingfn (const char *domain, const char *file, const char *function,
         size_t          len             = 0;
         int             ret             = 0;
         va_list         ap;
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
 
         this = THIS;
         ctx = this->ctx;
@@ -920,9 +920,9 @@ out:
 int
 _gf_msg_plain_internal (gf_loglevel_t level, const char *msg)
 {
-        xlator_t        *this           = NULL;
-        glusterfs_ctx_t *ctx            = NULL;
-        int              priority;
+        xlator_t            *this           = NULL;
+        glusterfs_vol_ctx_t *ctx            = NULL;
+        int                  priority;
 
         this = THIS;
         ctx = this->ctx;
@@ -970,11 +970,11 @@ _gf_msg_plain_internal (gf_loglevel_t level, const char *msg)
 int
 _gf_msg_plain (gf_loglevel_t level, const char *fmt, ...)
 {
-        xlator_t        *this            = NULL;
-        int              ret             = 0;
-        va_list          ap;
-        char            *msg             = NULL;
-        glusterfs_ctx_t *ctx = NULL;
+        xlator_t            *this            = NULL;
+        int                  ret             = 0;
+        va_list              ap;
+        char                *msg             = NULL;
+        glusterfs_vol_ctx_t *ctx             = NULL;
 
         this = THIS;
         ctx = this->ctx;
@@ -1007,10 +1007,10 @@ out:
 int
 _gf_msg_vplain (gf_loglevel_t level, const char *fmt, va_list ap)
 {
-        xlator_t        *this            = NULL;
-        int              ret             = 0;
-        char            *msg             = NULL;
-        glusterfs_ctx_t *ctx             = NULL;
+        xlator_t            *this            = NULL;
+        int                  ret             = 0;
+        char                *msg             = NULL;
+        glusterfs_vol_ctx_t *ctx             = NULL;
 
         this = THIS;
         ctx = this->ctx;
@@ -1040,9 +1040,9 @@ out:
 int
 _gf_msg_plain_nomem (gf_loglevel_t level, const char *msg)
 {
-        xlator_t        *this           = NULL;
-        int              ret            = 0;
-        glusterfs_ctx_t *ctx            = NULL;
+        xlator_t            *this           = NULL;
+        int                  ret            = 0;
+        glusterfs_vol_ctx_t *ctx            = NULL;
 
         this = THIS;
         ctx = this->ctx;
@@ -1066,11 +1066,11 @@ out:
 void
 _gf_msg_backtrace_nomem (gf_loglevel_t level, int stacksize)
 {
-        xlator_t        *this            = NULL;
-        glusterfs_ctx_t *ctx = NULL;
-        void            *array[200];
-        size_t           bt_size = 0;
-        int              fd = -1;
+        xlator_t            *this            = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
+        void                *array[200];
+        size_t               bt_size = 0;
+        int                  fd = -1;
 
         this = THIS;
         ctx = this->ctx;
@@ -1152,16 +1152,16 @@ _gf_msg_nomem (const char *domain, const char *file,
                const char *function, int line, gf_loglevel_t level,
                size_t size)
 {
-        const char      *basename        = NULL;
-        xlator_t        *this            = NULL;
-        struct timeval   tv              = {0,};
-        int              ret             = 0;
-        int              fd              = -1;
-        char             msg[2048]       = {0,};
-        char             timestr[GF_LOG_TIMESTR_SIZE]    = {0,};
-        glusterfs_ctx_t *ctx = NULL;
-        int              wlen = 0;
-        int              priority;
+        const char          *basename        = NULL;
+        xlator_t            *this            = NULL;
+        struct timeval       tv              = {0,};
+        int                  ret             = 0;
+        int                  fd              = -1;
+        char                 msg[2048]       = {0,};
+        char                 timestr[GF_LOG_TIMESTR_SIZE]    = {0,};
+        glusterfs_vol_ctx_t *ctx = NULL;
+        int                  wlen = 0;
+        int                  priority;
 
         this = THIS;
         ctx = this->ctx;
@@ -1263,7 +1263,7 @@ out:
 }
 
 static int
-gf_log_syslog (glusterfs_ctx_t *ctx, const char *domain, const char *file,
+gf_log_syslog (glusterfs_vol_ctx_t *ctx, const char *domain, const char *file,
                const char *function, int32_t line, gf_loglevel_t level,
                int errnum, uint64_t msgid, char **appmsgstr, char *callstr,
                int graph_id, gf_log_format_t fmt)
@@ -1338,7 +1338,7 @@ gf_log_syslog (glusterfs_ctx_t *ctx, const char *domain, const char *file,
 }
 
 static int
-gf_log_glusterlog (glusterfs_ctx_t *ctx, const char *domain, const char *file,
+gf_log_glusterlog (glusterfs_vol_ctx_t *ctx, const char *domain, const char *file,
                    const char *function, int32_t line, gf_loglevel_t level,
                    int errnum, uint64_t msgid, char **appmsgstr, char *callstr,
                    struct timeval tv, int graph_id, gf_log_format_t fmt)
@@ -1494,7 +1494,7 @@ gf_syslog_log_repetitions (const char *domain, const char *file,
 }
 
 static int
-gf_glusterlog_log_repetitions (glusterfs_ctx_t *ctx, const char *domain,
+gf_glusterlog_log_repetitions (glusterfs_vol_ctx_t *ctx, const char *domain,
                                const char *file, const char *function,
                                int32_t line, gf_loglevel_t level, int errnum,
                                uint64_t msgid, char **appmsgstr, char *callstr,
@@ -1593,7 +1593,7 @@ err:
 }
 
 static int
-gf_log_print_with_repetitions (glusterfs_ctx_t *ctx, const char *domain,
+gf_log_print_with_repetitions (glusterfs_vol_ctx_t *ctx, const char *domain,
                                const char *file, const char *function,
                                int32_t line, gf_loglevel_t level, int errnum,
                                uint64_t msgid, char **appmsgstr, char *callstr,
@@ -1630,7 +1630,7 @@ gf_log_print_with_repetitions (glusterfs_ctx_t *ctx, const char *domain,
 }
 
 static int
-gf_log_print_plain_fmt (glusterfs_ctx_t *ctx, const char *domain,
+gf_log_print_plain_fmt (glusterfs_vol_ctx_t *ctx, const char *domain,
                         const char *file, const char *function, int32_t line,
                         gf_loglevel_t level, int errnum, uint64_t msgid,
                         char **appmsgstr, char *callstr, struct timeval tv,
@@ -1665,7 +1665,7 @@ gf_log_print_plain_fmt (glusterfs_ctx_t *ctx, const char *domain,
 }
 
 void
-gf_log_flush_message (log_buf_t *buf, glusterfs_ctx_t *ctx)
+gf_log_flush_message (log_buf_t *buf, glusterfs_vol_ctx_t *ctx)
 {
         if (buf->refcount == 1) {
                 (void) gf_log_print_plain_fmt (ctx, buf->domain, buf->file,
@@ -1688,7 +1688,7 @@ gf_log_flush_message (log_buf_t *buf, glusterfs_ctx_t *ctx)
 }
 
 static void
-gf_log_flush_list (struct list_head *copy, glusterfs_ctx_t *ctx)
+gf_log_flush_list (struct list_head *copy, glusterfs_vol_ctx_t *ctx)
 {
         log_buf_t        *iter = NULL;
         log_buf_t        *tmp  = NULL;
@@ -1701,7 +1701,7 @@ gf_log_flush_list (struct list_head *copy, glusterfs_ctx_t *ctx)
 }
 
 void
-gf_log_flush_msgs (glusterfs_ctx_t *ctx)
+gf_log_flush_msgs (glusterfs_vol_ctx_t *ctx)
 {
         struct list_head copy;
 
@@ -1720,7 +1720,7 @@ gf_log_flush_msgs (glusterfs_ctx_t *ctx)
 }
 
 static void
-gf_log_flush_extra_msgs (glusterfs_ctx_t *ctx, uint32_t new)
+gf_log_flush_extra_msgs (glusterfs_vol_ctx_t *ctx, uint32_t new)
 {
         int               count = 0;
         int                   i = 0;
@@ -1769,7 +1769,7 @@ unlock:
 }
 
 static int
-__gf_log_inject_timer_event (glusterfs_ctx_t *ctx)
+__gf_log_inject_timer_event (glusterfs_vol_ctx_t *ctx)
 {
         int              ret      = -1;
         struct timespec  timeout  = {0,};
@@ -1800,7 +1800,7 @@ out:
 }
 
 int
-gf_log_inject_timer_event (glusterfs_ctx_t *ctx)
+gf_log_inject_timer_event (glusterfs_vol_ctx_t *ctx)
 {
         int ret = -1;
 
@@ -1819,9 +1819,9 @@ gf_log_inject_timer_event (glusterfs_ctx_t *ctx)
 void
 gf_log_flush_timeout_cbk (void *data)
 {
-        glusterfs_ctx_t  *ctx  = NULL;
+        glusterfs_vol_ctx_t  *ctx  = NULL;
 
-        ctx = (glusterfs_ctx_t *) data;
+        ctx = (glusterfs_vol_ctx_t *) data;
 
         TEST_LOG("Log timer timed out. About to flush outstanding messages if "
                  "present");
@@ -1837,14 +1837,14 @@ _gf_msg_internal (const char *domain, const char *file, const char *function,
                   int32_t line, gf_loglevel_t level, int errnum, uint64_t msgid,
                   char **appmsgstr, char *callstr, int graph_id)
 {
-        int              ret              = -1;
-        uint32_t         size             = 0;
-        const char      *basename         = NULL;
-        xlator_t        *this             = NULL;
-        glusterfs_ctx_t *ctx              = NULL;
-        log_buf_t       *iter             = NULL;
-        log_buf_t       *buf_tmp          = NULL;
-        log_buf_t       *buf_new          = NULL;
+        int                  ret              = -1;
+        uint32_t             size             = 0;
+        const char          *basename         = NULL;
+        xlator_t            *this             = NULL;
+        glusterfs_vol_ctx_t *ctx              = NULL;
+        log_buf_t           *iter             = NULL;
+        log_buf_t           *buf_tmp          = NULL;
+        log_buf_t           *buf_new          = NULL;
         log_buf_t       *first            = NULL;
         struct timeval   tv               = {0,};
         gf_boolean_t     found            = _gf_false;
@@ -2009,14 +2009,14 @@ _gf_msg (const char *domain, const char *file, const char *function,
          int32_t line, gf_loglevel_t level, int errnum, int trace,
          uint64_t msgid, const char *fmt, ...)
 {
-        int              ret = 0;
-        char            *msgstr = NULL;
-        va_list          ap;
-        xlator_t        *this = NULL;
-        glusterfs_ctx_t *ctx = NULL;
-        char             callstr[GF_LOG_BACKTRACE_SIZE] = {0,};
-        int              passcallstr = 0;
-        int              log_inited = 0;
+        int                  ret = 0;
+        char                *msgstr = NULL;
+        va_list              ap;
+        xlator_t            *this = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
+        char                 callstr[GF_LOG_BACKTRACE_SIZE] = {0,};
+        int                  passcallstr = 0;
+        int                  log_inited = 0;
 
         /* in args check */
         if (!domain || !file || !function || !fmt) {
@@ -2111,7 +2111,7 @@ _gf_log (const char *domain, const char *file, const char *function, int line,
         int            ret  = 0;
         int            fd   = -1;
         xlator_t      *this = NULL;
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
 
         this = THIS;
         ctx = this->ctx;
@@ -2324,9 +2324,9 @@ out:
 int
 gf_cmd_log_init (const char *filename)
 {
-        int         fd   = -1;
-        xlator_t   *this = NULL;
-        glusterfs_ctx_t *ctx = NULL;
+        int                  fd   = -1;
+        xlator_t            *this = NULL;
+        glusterfs_vol_ctx_t *ctx  = NULL;
 
         this = THIS;
         ctx  = this->ctx;
@@ -2382,7 +2382,7 @@ gf_cmd_log (const char *domain, const char *fmt, ...)
         size_t         len  = 0;
         int            ret  = 0;
         int            fd   = -1;
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
 
         ctx = THIS->ctx;
 

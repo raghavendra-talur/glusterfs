@@ -176,7 +176,7 @@ gd_syncop_submit_request (struct rpc_clnt *rpc, void *req, void *local,
                 goto out;
 
         req_size = xdr_sizeof (xdrproc, req);
-        iobuf = iobuf_get2 (rpc->ctx->iobuf_pool, req_size);
+        iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, req_size);
         if (!iobuf)
                 goto out;
 

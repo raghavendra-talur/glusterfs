@@ -100,7 +100,7 @@ gfs_serialize_reply (rpcsvc_request_t *req, void *arg, struct iovec *outmsg,
          */
         if (arg && xdrproc) {
                 xdr_size = xdr_sizeof (xdrproc, arg);
-                iob = iobuf_get2 (req->svc->ctx->iobuf_pool, xdr_size);
+                iob = iobuf_get2 (process_ctx.rp.iobuf_pool, xdr_size);
                 if (!iob) {
                         gf_msg_callingfn (THIS->name, GF_LOG_ERROR, ENOMEM,
                                           PS_MSG_NO_MEMORY,
@@ -699,7 +699,7 @@ server_check_event_threads (xlator_t *this, server_conf_t *conf, int32_t old,
                 return 0;
 
         conf->event_threads = new;
-        return event_reconfigure_threads (this->ctx->event_pool,
+        return event_reconfigure_threads (process_ctx.rp.event_pool,
                                           conf->event_threads);
 }
 
@@ -767,8 +767,8 @@ reconfigure (xlator_t *this, dict_t *options)
                 goto out;
         }
         gf_path_strip_trailing_slashes (statedump_path);
-        GF_FREE (this->ctx->statedump_path);
-        this->ctx->statedump_path = gf_strdup (statedump_path);
+        GF_FREE (process_ctx.statedump_path);
+        process_ctx.statedump_path = gf_strdup (statedump_path);
 
         if (!conf->auth_modules)
                 conf->auth_modules = dict_new ();
@@ -968,7 +968,7 @@ init (xlator_t *this)
         GF_OPTION_INIT ("statedump-path", statedump_path, path, out);
         if (statedump_path) {
                 gf_path_strip_trailing_slashes (statedump_path);
-                this->ctx->statedump_path = gf_strdup (statedump_path);
+                process_ctx.statedump_path = gf_strdup (statedump_path);
         } else {
                 gf_msg (this->name, GF_LOG_ERROR, 0,
                         PS_MSG_STATEDUMP_PATH_ERROR,

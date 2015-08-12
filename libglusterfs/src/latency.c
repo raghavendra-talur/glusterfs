@@ -178,7 +178,7 @@ gf_proc_dump_latency_info (xlator_t *xl)
 
 
 void
-gf_latency_toggle (int signum, glusterfs_ctx_t *ctx)
+gf_latency_toggle (int signum, glusterfs_vol_ctx_t *ctx)
 {
         if (ctx) {
                 ctx->measure_latency = !ctx->measure_latency;

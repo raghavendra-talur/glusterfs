@@ -6454,7 +6454,7 @@ glusterd_schedule_brick_snapshot (dict_t *dict, dict_t *rsp_dict,
                         snap_args->brickorder = brickorder;
                         snap_args->args = &args;
 
-                        ret = synctask_new (this->ctx->env,
+                        ret = synctask_new (process_ctx.rp.env,
                                             glusterd_take_brick_snapshot_task,
                                             glusterd_take_brick_snapshot_cbk,
                                             NULL, snap_args);

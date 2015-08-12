@@ -891,7 +891,7 @@ struct _xlator {
 
         /* Misc */
         eh_t               *history; /* event history context */
-        glusterfs_ctx_t    *ctx;
+        glusterfs_vol_ctx_t *ctx;
         glusterfs_graph_t  *graph; /* not set for fuse */
         inode_table_t      *itable;
         char                init_succeeded;
@@ -933,7 +933,7 @@ int32_t xlator_set_type (xlator_t *xl, const char *type);
 
 int32_t xlator_dynload (xlator_t *xl);
 
-xlator_t *file_to_xlator_tree (glusterfs_ctx_t *ctx,
+xlator_t *file_to_xlator_tree (glusterfs_vol_ctx_t *ctx,
                                FILE *fp);
 
 int xlator_notify (xlator_t *this, int32_t event, void *data, ...);
@@ -986,7 +986,7 @@ gf_boolean_t
 is_graph_topology_equal (glusterfs_graph_t *graph1, glusterfs_graph_t *graph2);
 int
 glusterfs_volfile_reconfigure (int oldvollen, FILE *newvolfile_fp,
-                               glusterfs_ctx_t *ctx, const char *oldvolfile);
+                               glusterfs_vol_ctx_t *ctx, const char *oldvolfile);
 
 int
 loc_touchup (loc_t *loc, const char *name);

@@ -447,7 +447,7 @@ rpcsvc_register_portmap_enabled (rpcsvc_t *svc);
  * Called in main.
  */
 extern rpcsvc_t *
-rpcsvc_init (xlator_t *xl, glusterfs_ctx_t *ctx, dict_t *options,
+rpcsvc_init (xlator_t *xl, glusterfs_vol_ctx_t *ctx, dict_t *options,
              uint32_t poolcount);
 
 extern int
@@ -579,7 +579,7 @@ rpcsvc_volume_allowed (dict_t *options, char *volname);
 
 int rpcsvc_request_submit (rpcsvc_t *rpc, rpc_transport_t *trans,
                            rpcsvc_cbk_program_t *prog, int procnum,
-                           void *req, glusterfs_ctx_t *ctx,
+                           void *req, glusterfs_vol_ctx_t *ctx,
                            xdrproc_t xdrproc);
 
 int rpcsvc_callback_submit (rpcsvc_t *rpc, rpc_transport_t *trans,

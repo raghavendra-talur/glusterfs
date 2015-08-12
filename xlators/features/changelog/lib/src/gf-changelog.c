@@ -168,7 +168,7 @@ gf_changelog_cleanup_this (xlator_t *this)
                 return;
 
         ctx = this->ctx;
-        syncenv_destroy (ctx->env);
+        syncenv_destroy (process_ctx.rp.env);
         free (ctx);
 
         this->private = NULL;
@@ -178,9 +178,14 @@ gf_changelog_cleanup_this (xlator_t *this)
 static int
 gf_changelog_init_context ()
 {
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
+        int                  ret = -1;
 
-        ctx = glusterfs_ctx_new ();
+        ret = glusterfs_init_process_ctx ();
+        if (ret)
+                goto error_return;
+
+        ctx = glusterfs_new_vol_ctx ();
         if (!ctx)
                 goto error_return;
 
@@ -191,7 +196,7 @@ gf_changelog_init_context ()
         if (gf_changelog_ctx_defaults_init (ctx))
                 goto free_ctx;
 
-        ctx->env = syncenv_new (0, 0, 0);
+        process_ctx.rp.env = syncenv_new (0, 0, 0);
         if (!ctx->env)
                 goto free_ctx;
         return 0;

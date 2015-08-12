@@ -115,7 +115,7 @@ glusterfs_graph_set_first (glusterfs_graph_t *graph, xlator_t *xl)
 
 
 int
-glusterfs_graph_insert (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx,
+glusterfs_graph_insert (glusterfs_graph_t *graph, glusterfs_vol_ctx_t *ctx,
                         const char *type, const char *name,
                         gf_boolean_t autoload)
 {
@@ -164,7 +164,7 @@ err:
 }
 
 int
-glusterfs_graph_acl (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx)
+glusterfs_graph_acl (glusterfs_graph_t *graph, glusterfs_vol_ctx_t *ctx)
 {
         int ret = 0;
         cmd_args_t      *cmd_args = NULL;
@@ -180,7 +180,7 @@ glusterfs_graph_acl (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx)
 }
 
 int
-glusterfs_graph_worm (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx)
+glusterfs_graph_worm (glusterfs_graph_t *graph, glusterfs_vol_ctx_t *ctx)
 {
         int ret = 0;
         cmd_args_t      *cmd_args = NULL;
@@ -197,7 +197,7 @@ glusterfs_graph_worm (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx)
 
 
 int
-glusterfs_graph_meta (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx)
+glusterfs_graph_meta (glusterfs_graph_t *graph, glusterfs_vol_ctx_t *ctx)
 {
         int ret = 0;
 
@@ -211,7 +211,7 @@ glusterfs_graph_meta (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx)
 
 
 int
-glusterfs_graph_mac_compat (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx)
+glusterfs_graph_mac_compat (glusterfs_graph_t *graph, glusterfs_vol_ctx_t *ctx)
 {
         int ret = 0;
         cmd_args_t      *cmd_args = NULL;
@@ -228,7 +228,7 @@ glusterfs_graph_mac_compat (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx)
 }
 
 int
-glusterfs_graph_gfid_access (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx)
+glusterfs_graph_gfid_access (glusterfs_graph_t *graph, glusterfs_vol_ctx_t *ctx)
 {
         int ret = 0;
         cmd_args_t      *cmd_args = NULL;
@@ -407,7 +407,7 @@ fill_uuid (char *uuid, int size)
 
 
 int
-glusterfs_graph_settop (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx)
+glusterfs_graph_settop (glusterfs_graph_t *graph, glusterfs_vol_ctx_t *ctx)
 {
         const char *volume_name = NULL;
         xlator_t   *trav = NULL;
@@ -454,7 +454,7 @@ glusterfs_graph_parent_up (glusterfs_graph_t *graph)
 
 
 int
-glusterfs_graph_prepare (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx)
+glusterfs_graph_prepare (glusterfs_graph_t *graph, glusterfs_vol_ctx_t *ctx)
 {
         xlator_t    *trav = NULL;
         int          ret = 0;
@@ -646,7 +646,7 @@ glusterfs_reachable_leaves(xlator_t *base, dict_t *leaves)
 }
 
 int
-glusterfs_graph_activate (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx)
+glusterfs_graph_activate (glusterfs_graph_t *graph, glusterfs_vol_ctx_t *ctx)
 {
         int ret = 0;
         xlator_t *root = NULL;
@@ -791,7 +791,7 @@ out:
  */
 int
 glusterfs_volfile_reconfigure (int oldvollen, FILE *newvolfile_fp,
-                               glusterfs_ctx_t *ctx, const char *oldvolfile)
+                               glusterfs_vol_ctx_t *ctx, const char *oldvolfile)
 {
         glusterfs_graph_t *oldvolfile_graph = NULL;
         glusterfs_graph_t *newvolfile_graph = NULL;
@@ -956,7 +956,7 @@ glusterfs_graph_destroy_residual (glusterfs_graph_t *graph)
  * its mem accounting, which would mean after calling glusterfs_graph_destroy()
  * there cannot be any reference to GF_FREE() from the master xlator, this is
  * not possible because of the following dependencies:
- * - glusterfs_ctx_t will have mem pools allocated by the master xlators
+ * - process_ctx will have mem pools allocated by the master xlators
  * - xlator objects will have references to those mem pools(g: dict)
  *
  * Ordering the freeing in any of the order will also not solve the dependency:

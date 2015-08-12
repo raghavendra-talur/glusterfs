@@ -52,13 +52,13 @@ rpc_clnt_prog_t svs_clnt_handshake_prog = {
 int
 svs_mgmt_init (xlator_t *this)
 {
-        int              ret      = -1;
-        svs_private_t   *priv     = NULL;
-        dict_t          *options  = NULL;
-        int              port     = GF_DEFAULT_BASE_PORT;
-        char            *host     = NULL;
-        cmd_args_t      *cmd_args = NULL;
-        glusterfs_ctx_t *ctx      = NULL;
+        int                  ret      = -1;
+        svs_private_t       *priv     = NULL;
+        dict_t              *options  = NULL;
+        int                  port     = GF_DEFAULT_BASE_PORT;
+        char                *host     = NULL;
+        cmd_args_t          *cmd_args = NULL;
+        glusterfs_vol_ctx_t *ctx      = NULL;
 
         GF_VALIDATE_OR_GOTO ("snapview-server", this, out);
         GF_VALIDATE_OR_GOTO (this->name, this->private, out);
@@ -118,7 +118,7 @@ out:
 
 int
 svs_mgmt_submit_request (void *req, call_frame_t *frame,
-                         glusterfs_ctx_t *ctx,
+                         glusterfs_vol_ctx_t *ctx,
                          rpc_clnt_prog_t *prog, int procnum,
                          fop_cbk_fn_t cbkfn, xdrproc_t xdrproc)
 {
@@ -144,7 +144,7 @@ svs_mgmt_submit_request (void *req, call_frame_t *frame,
         if (req) {
                 xdr_size = xdr_sizeof (xdrproc, req);
 
-                iobuf = iobuf_get2 (ctx->iobuf_pool, xdr_size);
+                iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, xdr_size);
                 if (!iobuf) {
                         goto out;
                 }
@@ -185,7 +185,7 @@ mgmt_get_snapinfo_cbk (struct rpc_req *req, struct iovec *iov,
 {
         gf_getsnap_name_uuid_rsp        rsp             = {0,};
         call_frame_t                    *frame          = NULL;
-        glusterfs_ctx_t                 *ctx            = NULL;
+        glusterfs_vol_ctx_t             *ctx            = NULL;
         int                             ret             = -1;
         dict_t                          *dict           = NULL;
         char                            key[1024]       = {0};
@@ -398,7 +398,7 @@ svs_get_snapshot_list (xlator_t *this)
         gf_getsnap_name_uuid_req        req             = {{0,}};
         int                             ret             = -1;
         dict_t                          *dict           = NULL;
-        glusterfs_ctx_t                 *ctx            = NULL;
+        glusterfs_vol_ctx_t             *ctx            = NULL;
         call_frame_t                    *frame          = NULL;
         svs_private_t                   *priv           = NULL;
         gf_boolean_t                    frame_cleanup   = _gf_true;

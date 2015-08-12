@@ -58,7 +58,7 @@ typedef struct rpcsvc_state {
         gf_boolean_t            root_squash;
         uid_t                   anonuid;
         gid_t                   anongid;
-        glusterfs_ctx_t         *ctx;
+        glusterfs_vol_ctx_t    *ctx;
 
         /* list of connections which will listen for incoming connections */
         struct list_head        listeners;

@@ -1726,7 +1726,7 @@ dht_start_rebalance_task (xlator_t *this, call_frame_t *frame)
 {
         int         ret     = -1;
 
-        ret = synctask_new (this->ctx->env, rebalance_task,
+        ret = synctask_new (process_ctx.rp.env, rebalance_task,
                             rebalance_task_completion,
                             frame, frame);
         return ret;
@@ -1735,9 +1735,9 @@ dht_start_rebalance_task (xlator_t *this, call_frame_t *frame)
 int
 gf_listener_stop (xlator_t *this)
 {
-        glusterfs_ctx_t  *ctx = NULL;
-        cmd_args_t       *cmd_args = NULL;
-        int              ret = 0;
+        glusterfs_vol_ctx_t  *ctx = NULL;
+        cmd_args_t           *cmd_args = NULL;
+        int                   ret = 0;
 
         ctx = this->ctx;
         GF_ASSERT (ctx);
@@ -3188,7 +3188,7 @@ gf_defrag_start_crawl (void *data)
         dict_t                  *migrate_data   = NULL;
         dict_t                  *status         = NULL;
         dict_t                  *dict           = NULL;
-        glusterfs_ctx_t         *ctx            = NULL;
+        glusterfs_vol_ctx_t     *ctx            = NULL;
         dht_methods_t           *methods        = NULL;
         int                      i              = 0;
         int                     thread_index    = 0;
@@ -3493,7 +3493,7 @@ gf_defrag_start (void *data)
 
         old_THIS = THIS;
         THIS = this;
-        ret = synctask_new (this->ctx->env, gf_defrag_start_crawl,
+        ret = synctask_new (process_ctx.rp.env, gf_defrag_start_crawl,
                             gf_defrag_done, frame, this);
 
         if (ret)

@@ -69,7 +69,7 @@ quota_enforcer_submit_request (void *req, call_frame_t *frame,
 
         if (req) {
                 xdr_size = xdr_sizeof (xdrproc, req);
-                iobuf = iobuf_get2 (this->ctx->iobuf_pool, xdr_size);
+                iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, xdr_size);
                 if (!iobuf) {
                         goto out;
                 }

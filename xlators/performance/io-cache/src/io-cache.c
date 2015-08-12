@@ -1730,13 +1730,12 @@ out:
 int32_t
 init (xlator_t *this)
 {
-        ioc_table_t     *table             = NULL;
-        dict_t          *xl_options        = NULL;
-        uint32_t         index             = 0;
-        int32_t          ret               = -1;
-        glusterfs_ctx_t *ctx               = NULL;
-        data_t          *data              = 0;
-        uint32_t         num_pages         = 0;
+        ioc_table_t         *table             = NULL;
+        dict_t              *xl_options        = NULL;
+        uint32_t             index             = 0;
+        int32_t              ret               = -1;
+        data_t              *data              = 0;
+        uint32_t             num_pages         = 0;
 
         xl_options = this->options;
 
@@ -1762,7 +1761,7 @@ init (xlator_t *this)
         }
 
         table->xl = this;
-        table->page_size = this->ctx->page_size;
+        table->page_size = process_ctx.rp.page_size;
 
         GF_OPTION_INIT ("cache-size", table->cache_size, size_uint64, out);
 
@@ -1841,8 +1840,7 @@ init (xlator_t *this)
 
         ret = 0;
 
-        ctx = this->ctx;
-        ioc_log2_page_size = log_base2 (ctx->page_size);
+        ioc_log2_page_size = log_base2 (process_ctx.rp.page_size);
 
 out:
         if (ret == -1) {

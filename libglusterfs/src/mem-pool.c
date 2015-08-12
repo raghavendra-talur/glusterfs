@@ -27,24 +27,6 @@
 #include "unittest/unittest.h"
 #include "libglusterfs-messages.h"
 
-void
-gf_mem_acct_enable_set (void *data)
-{
-        glusterfs_ctx_t *ctx = NULL;
-
-        REQUIRE(data != NULL);
-
-        ctx = data;
-
-        GF_ASSERT (ctx != NULL);
-
-        ctx->mem_acct_enable = 1;
-
-        ENSURE(1 == ctx->mem_acct_enable);
-
-        return;
-}
-
 int
 gf_mem_set_acct_info (xlator_t *xl, char **alloc_ptr, size_t size,
 		      uint32_t type, const char *typestr)
@@ -106,7 +88,7 @@ __gf_calloc (size_t nmemb, size_t size, uint32_t type, const char *typestr)
         char            *ptr = NULL;
         xlator_t        *xl = NULL;
 
-        if (!THIS->ctx->mem_acct_enable)
+        if (!process_ctx.mem_acct_enable)
                 return CALLOC (nmemb, size);
 
         xl = THIS;
@@ -132,7 +114,7 @@ __gf_malloc (size_t size, uint32_t type, const char *typestr)
         char            *ptr = NULL;
         xlator_t        *xl = NULL;
 
-        if (!THIS->ctx->mem_acct_enable)
+        if (!process_ctx.mem_acct_enable)
                 return MALLOC (size);
 
         xl = THIS;
@@ -158,7 +140,7 @@ __gf_realloc (void *ptr, size_t size)
         struct mem_header *new_header = NULL;
         struct mem_header  tmp_header;
 
-        if (!THIS->ctx->mem_acct_enable)
+        if (!process_ctx.mem_acct_enable)
                 return REALLOC (ptr, size);
 
         REQUIRE(NULL != ptr);
@@ -290,7 +272,7 @@ __gf_free (void *free_ptr)
         struct mem_acct   *mem_acct;
         struct mem_header *header = NULL;
 
-        if (!THIS->ctx->mem_acct_enable) {
+        if (!process_ctx.mem_acct_enable) {
                 FREE (free_ptr);
                 return;
         }
@@ -348,7 +330,7 @@ mem_pool_new_fn (unsigned long sizeof_type,
         GF_UNUSED int               i = 0;
         int               ret = 0;
         GF_UNUSED struct list_head *list = NULL;
-        glusterfs_ctx_t  *ctx = NULL;
+        glusterfs_vol_ctx_t  *ctx = NULL;
 
         if (!sizeof_type || !count) {
                 gf_msg_callingfn ("mem-pool", GF_LOG_ERROR, EINVAL,
@@ -401,7 +383,7 @@ mem_pool_new_fn (unsigned long sizeof_type,
         if (!ctx)
                 goto out;
 
-        list_add (&mem_pool->global_list, &ctx->mempool_list);
+        list_add (&mem_pool->global_list, &process_ctx.rp.mempool_list);
 
 out:
         return mem_pool;

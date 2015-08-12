@@ -1118,7 +1118,7 @@ changelog_local_init (xlator_t *this, inode_t *inode,
         }
 
         if (xtra_records) {
-                iobuf = iobuf_get2 (this->ctx->iobuf_pool,
+                iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool,
                                     xtra_records * CHANGELOG_OPT_RECORD_LEN);
                 if (!iobuf)
                         goto out;

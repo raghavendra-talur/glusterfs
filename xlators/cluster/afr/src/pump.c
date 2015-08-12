@@ -2350,7 +2350,7 @@ init (xlator_t *this)
                 goto out;
         }
 
-	pump_priv->env = this->ctx->env;
+	pump_priv->env = process_ctx.rp.env;
         if (!pump_priv->env) {
                 ret = -1;
                 goto out;

@@ -1150,9 +1150,9 @@ __wb_collapse_small_writes (wb_request_t *holder, wb_request_t *req)
                 req_len = iov_length (req->stub->args.vector,
                                       req->stub->args.count);
 
-                required_size = max ((THIS->ctx->page_size),
+                required_size = max ((process_ctx.rp.page_size),
                                      (holder_len + req_len));
-                iobuf = iobuf_get2 (req->wb_inode->this->ctx->iobuf_pool,
+                iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool,
                                     required_size);
                 if (iobuf == NULL) {
                         goto out;
@@ -1224,7 +1224,7 @@ __wb_preprocess_winds (wb_inode_t *wb_inode)
 	   through the interleaved ops
 	*/
 
-	page_size = wb_inode->this->ctx->page_size;
+	page_size = process_ctx.rp.page_size;
 	conf = wb_inode->this->private;
 
         list_for_each_entry_safe (req, tmp, &wb_inode->todo, todo) {

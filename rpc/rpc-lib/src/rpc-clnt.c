@@ -948,7 +948,7 @@ out:
 }
 
 static int
-rpc_clnt_connection_init (struct rpc_clnt *clnt, glusterfs_ctx_t *ctx,
+rpc_clnt_connection_init (struct rpc_clnt *clnt, glusterfs_vol_ctx_t *ctx,
                           dict_t *options, char *name)
 {
         int                    ret  = -1;
@@ -1045,7 +1045,7 @@ rpc_clnt_new (dict_t *options, xlator_t *owner, char *name,
 {
         int                    ret  = -1;
         struct rpc_clnt       *rpc  = NULL;
-        glusterfs_ctx_t       *ctx  = owner->ctx;
+        glusterfs_vol_ctx_t   *ctx  = owner->ctx;
 
 
         rpc = GF_CALLOC (1, sizeof (*rpc), gf_common_mt_rpcclnt_t);
@@ -1300,7 +1300,7 @@ rpc_clnt_record_build_record (struct rpc_clnt *clnt, int prognum, int progver,
         /* First, try to get a pointer into the buffer which the RPC
          * layer can use.
          */
-        request_iob = iobuf_get2 (clnt->ctx->iobuf_pool, (xdr_size + hdrsize));
+        request_iob = iobuf_get2 (process_ctx.rp.iobuf_pool, (xdr_size + hdrsize));
         if (!request_iob) {
                 goto out;
         }

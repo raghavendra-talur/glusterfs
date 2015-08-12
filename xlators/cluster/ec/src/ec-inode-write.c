@@ -841,7 +841,7 @@ int32_t ec_truncate_write(ec_fop_data_t * fop, uintptr_t mask)
     if (iobref == NULL) {
         goto out;
     }
-    iobuf = iobuf_get(fop->xl->ctx->iobuf_pool);
+    iobuf = iobuf_get(process_ctx.rp.iobuf_pool);
     if (iobuf == NULL) {
         goto out;
     }
@@ -1326,7 +1326,7 @@ void ec_writev_start(ec_fop_data_t *fop)
     if (iobref == NULL) {
         goto out;
     }
-    iobuf = iobuf_get2(fop->xl->ctx->iobuf_pool, fop->size);
+    iobuf = iobuf_get2(process_ctx.rp.iobuf_pool, fop->size);
     if (iobuf == NULL) {
         goto out;
     }
@@ -1424,7 +1424,7 @@ void ec_wind_writev(ec_t * ec, ec_fop_data_t * fop, int32_t idx)
     size = fop->vector[0].iov_len;
     bufsize = size / ec->fragments;
 
-    iobuf = iobuf_get2(fop->xl->ctx->iobuf_pool, bufsize);
+    iobuf = iobuf_get2(process_ctx.rp.iobuf_pool, bufsize);
     if (iobuf == NULL) {
         goto out;
     }

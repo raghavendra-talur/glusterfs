@@ -420,7 +420,7 @@ fuse_entry_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
                         frame->root->unique, gf_fop_list[frame->root->op],
                         state->loc.path, buf->ia_ino);
 
-                buf->ia_blksize = this->ctx->page_size;
+                buf->ia_blksize = process_ctx.rp.page_size;
                 gf_fuse_stat2attr (buf, &feo.attr, priv->enable_ino32);
 
                 if (!buf->ia_ino) {
@@ -684,7 +684,7 @@ fuse_truncate_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
                         state->loc.path ? state->loc.path : "ERR",
                         prebuf->ia_ino);
 
-                postbuf->ia_blksize = this->ctx->page_size;
+                postbuf->ia_blksize = process_ctx.rp.page_size;
                 gf_fuse_stat2attr (postbuf, &fao.attr, priv->enable_ino32);
 
                 fao.attr_valid = calc_timeout_sec (priv->attribute_timeout);
@@ -739,7 +739,7 @@ fuse_attr_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
                         state->loc.path ? state->loc.path : "ERR",
                         buf->ia_ino);
 
-                buf->ia_blksize = this->ctx->page_size;
+                buf->ia_blksize = process_ctx.rp.page_size;
                 gf_fuse_stat2attr (buf, &fao.attr, priv->enable_ino32);
 
                 fao.attr_valid = calc_timeout_sec (priv->attribute_timeout);
@@ -1036,7 +1036,7 @@ fuse_setattr_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
                         state->loc.path ? state->loc.path : "ERR",
                         statpost->ia_ino);
 
-                statpost->ia_blksize = this->ctx->page_size;
+                statpost->ia_blksize = process_ctx.rp.page_size;
                 gf_fuse_stat2attr (statpost, &fao.attr, priv->enable_ino32);
 
                 fao.attr_valid = calc_timeout_sec (priv->attribute_timeout);
@@ -1770,7 +1770,7 @@ fuse_rename_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
                         */
                         buf->ia_type = state->loc.inode->ia_type;
                 }
-                buf->ia_blksize = this->ctx->page_size;
+                buf->ia_blksize = process_ctx.rp.page_size;
 
                 inode_rename (state->loc.parent->table,
                               state->loc.parent, state->loc.name,
@@ -1943,7 +1943,7 @@ fuse_create_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
                         frame->root->unique, gf_fop_list[frame->root->op],
                         state->loc.path, fd, buf->ia_ino);
 
-                buf->ia_blksize = this->ctx->page_size;
+                buf->ia_blksize = process_ctx.rp.page_size;
                 gf_fuse_stat2attr (buf, &feo.attr, priv->enable_ino32);
 
                 linked_inode = inode_link (inode, state->loc.parent,
@@ -2865,7 +2865,7 @@ fuse_readdirp_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
 		if (!entry->inode)
 			goto next_entry;
 
-		entry->d_stat.ia_blksize = this->ctx->page_size;
+		entry->d_stat.ia_blksize = process_ctx.rp.page_size;
 		gf_fuse_stat2attr (&entry->d_stat, &feo->attr, priv->enable_ino32);
 
 		linked_inode = inode_link (entry->inode, state->fd->inode,
@@ -3084,15 +3084,15 @@ fuse_statfs_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
 #ifndef GF_DARWIN_HOST_OS
                 /* MacFUSE doesn't respect anyof these tweaks */
                 buf->f_blocks *= buf->f_frsize;
-                buf->f_blocks /= this->ctx->page_size;
+                buf->f_blocks /= process_ctx.rp.page_size;
 
                 buf->f_bavail *= buf->f_frsize;
-                buf->f_bavail /= this->ctx->page_size;
+                buf->f_bavail /= process_ctx.rp.page_size;
 
                 buf->f_bfree *= buf->f_frsize;
-                buf->f_bfree /= this->ctx->page_size;
+                buf->f_bfree /= process_ctx.rp.page_size;
 
-                buf->f_frsize = buf->f_bsize =this->ctx->page_size;
+                buf->f_frsize = buf->f_bsize =process_ctx.rp.page_size;
 #endif /* GF_DARWIN_HOST_OS */
                 fso.st.bsize   = buf->f_bsize;
                 fso.st.frsize  = buf->f_frsize;
@@ -4759,7 +4759,7 @@ fuse_handle_graph_switch (xlator_t *this, xlator_t *old_subvol,
         args->old_subvol = old_subvol;
         args->new_subvol = new_subvol;
 
-        ret = synctask_new (this->ctx->env, fuse_graph_switch_task, NULL, frame,
+        ret = synctask_new (process_ctx.rp.env, fuse_graph_switch_task, NULL, frame,
                             args);
         if (ret == -1) {
                 gf_log (this->name, GF_LOG_WARNING, "starting sync-task to "
@@ -4879,7 +4879,7 @@ fuse_thread_proc (void *data)
         THIS = this;
 
         iov_in[0].iov_len = sizeof (*finh) + sizeof (struct fuse_write_in);
-        iov_in[1].iov_len = ((struct iobuf_pool *)this->ctx->iobuf_pool)
+        iov_in[1].iov_len = ((struct iobuf_pool *)process_ctx.rp.iobuf_pool)
                               ->default_page_size;
         priv->msg0_len_p = &iov_in[0].iov_len;
 
@@ -4929,7 +4929,7 @@ fuse_thread_proc (void *data)
                    size from 'fuse', which is as of today 128KB. If we bring in
                    support for higher block sizes support, then we should be
                    changing this one too */
-                iobuf = iobuf_get (this->ctx->iobuf_pool);
+                iobuf = iobuf_get (process_ctx.rp.iobuf_pool);
 
                 /* Add extra 128 byte to the first iov so that it can
                  * accommodate "ordinary" non-write requests. It's not
@@ -5438,12 +5438,12 @@ init (xlator_t *this_xl)
         int                i = 0;
         int                xl_name_allocated = 0;
         int                fsname_allocated = 0;
-        glusterfs_ctx_t   *ctx = NULL;
         gf_boolean_t       sync_to_mount = _gf_false;
         gf_boolean_t       fopen_keep_cache = _gf_false;
         unsigned long      mntflags = 0;
         char              *mnt_args = NULL;
         eh_t              *event = NULL;
+        glusterfs_vol_ctx_t   *ctx = NULL;
 
         if (this_xl == NULL)
                 return -1;
@@ -5693,7 +5693,7 @@ init (xlator_t *this_xl)
         }
 
         priv->fd = gf_fuse_mount (priv->mount_point, fsname, mntflags, mnt_args,
-                                  sync_to_mount ? &ctx->mnt_pid : NULL,
+                                  sync_to_mount ? &process_ctx.mnt_pid : NULL,
                                   priv->status_pipe[1]);
         if (priv->fd == -1)
                 goto cleanup_exit;

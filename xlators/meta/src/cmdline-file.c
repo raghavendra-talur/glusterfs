@@ -21,9 +21,9 @@
 static int
 cmdline_file_fill (xlator_t *this, inode_t *file, strfd_t *strfd)
 {
-        if (this->ctx->cmdlinestr)
+        if (process_ctx.cmdlinestr)
                 strprintf (strfd, "{ \n  \"Cmdlinestr\": \"%s\"\n}",
-                           this->ctx->cmdlinestr);
+                           process_ctx.cmdlinestr);
         return strfd->size;
 }
 

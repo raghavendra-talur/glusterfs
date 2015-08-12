@@ -1700,7 +1700,7 @@ inode_table_ctx_free (inode_table_t *table)
 }
 
 void
-inode_table_destroy_all (glusterfs_ctx_t *ctx) {
+inode_table_destroy_all (glusterfs_vol_ctx_t *ctx) {
 
         glusterfs_graph_t *trav_graph  = NULL, *tmp = NULL;
         xlator_t          *tree        = NULL;

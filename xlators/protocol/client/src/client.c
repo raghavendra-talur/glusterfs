@@ -64,9 +64,9 @@ client_notify_dispatch_uniq (xlator_t *this, int32_t event, void *data, ...)
 int
 client_notify_dispatch (xlator_t *this, int32_t event, void *data, ...)
 {
-       int              ret  = -1;
-       glusterfs_ctx_t *ctx  = this->ctx;
-       clnt_conf_t     *conf = this->private;
+       int                  ret  = -1;
+       glusterfs_vol_ctx_t *ctx  = this->ctx;
+       clnt_conf_t         *conf = this->private;
 
        pthread_mutex_lock (&ctx->notify_lock);
        {
@@ -252,7 +252,7 @@ client_submit_request (xlator_t *this, void *req, call_frame_t *frame,
 
         if (req && xdrproc) {
                 xdr_size = xdr_sizeof (xdrproc, req);
-                iobuf = iobuf_get2 (this->ctx->iobuf_pool, xdr_size);
+                iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, xdr_size);
                 if (!iobuf) {
                         goto out;
                 };
@@ -2358,7 +2358,7 @@ client_check_event_threads (xlator_t *this, clnt_conf_t *conf, int32_t old,
                 return 0;
 
         conf->event_threads = new;
-        return event_reconfigure_threads (this->ctx->event_pool,
+        return event_reconfigure_threads (process_ctx.rp.event_pool,
                                           conf->event_threads);
 }
 

@@ -922,7 +922,7 @@ __socket_reset (rpc_transport_t *this)
 
         memset (&priv->incoming, 0, sizeof (priv->incoming));
 
-        event_unregister_close (this->ctx->event_pool, priv->sock, priv->idx);
+        event_unregister_close (process_ctx.rp.event_pool, priv->sock, priv->idx);
 
         priv->sock = -1;
         priv->idx = -1;
@@ -1117,7 +1117,7 @@ __socket_ioq_churn (rpc_transport_t *this)
 
         if (!priv->own_thread && list_empty (&priv->ioq)) {
                 /* all pending writes done, not interested in POLLOUT */
-                priv->idx = event_select_on (this->ctx->event_pool,
+                priv->idx = event_select_on (process_ctx.rp.event_pool,
                                              priv->sock, priv->idx, -1, 0);
         }
 
@@ -1389,7 +1389,7 @@ sp_state_read_proghdr_xdata:
                 if (in->payload_vector.iov_base == NULL) {
 
                         size = RPC_FRAGSIZE (in->fraghdr) - frag->bytes_read;
-                        iobuf = iobuf_get2 (this->ctx->iobuf_pool, size);
+                        iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, size);
                         if (!iobuf) {
                                 ret = -1;
                                 break;
@@ -1599,7 +1599,7 @@ __socket_read_accepted_successful_reply (rpc_transport_t *this)
 
                         size = (RPC_FRAGSIZE (in->fraghdr) - frag->bytes_read);
 
-                        iobuf = iobuf_get2 (this->ctx->iobuf_pool, size);
+                        iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, size);
                         if (iobuf == NULL) {
                                 ret = -1;
                                 goto out;
@@ -2075,7 +2075,7 @@ __socket_proto_state_machine (rpc_transport_t *this,
                                 goto out;
                         }
 
-                        iobuf = iobuf_get2 (this->ctx->iobuf_pool,
+                        iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool,
                                             (in->total_bytes_read +
                                              sizeof (in->fraghdr)));
                         if (!iobuf) {
@@ -2566,7 +2566,7 @@ socket_server_event_handler (int fd, int idx, void *data,
         struct sockaddr_storage  new_sockaddr = {0, };
         socklen_t                addrlen = sizeof (new_sockaddr);
         socket_private_t        *new_priv = NULL;
-        glusterfs_ctx_t         *ctx = NULL;
+        glusterfs_vol_ctx_t     *ctx = NULL;
         char                    *cname = NULL;
 
         this = data;
@@ -2744,7 +2744,7 @@ socket_server_event_handler (int fd, int idx, void *data,
 				}
 				else {
 					new_priv->idx =
-						event_register (ctx->event_pool,
+						event_register (process_ctx.rp.event_pool,
 								new_sock,
 								socket_event_handler,
 								new_trans,
@@ -2845,7 +2845,7 @@ socket_connect (rpc_transport_t *this, int port)
         int                            sock            = -1;
         socket_private_t              *priv            = NULL;
         socklen_t                      sockaddr_len    = 0;
-        glusterfs_ctx_t               *ctx             = NULL;
+        glusterfs_vol_ctx_t           *ctx             = NULL;
         sa_family_t                    sa_family       = {0, };
         char                          *local_addr      = NULL;
         union gf_sock_union            sock_union;
@@ -3084,7 +3084,7 @@ handler:
                         socket_spawn(this);
                 }
                 else {
-                        priv->idx = event_register (ctx->event_pool, priv->sock,
+                        priv->idx = event_register (process_ctx.rp.event_pool, priv->sock,
                                                     socket_event_handler,
                                                     this, 1, 1);
                         if (priv->idx == -1) {
@@ -3137,7 +3137,7 @@ socket_listen (rpc_transport_t *this)
         struct sockaddr_storage  sockaddr;
         socklen_t                sockaddr_len = 0;
         peer_info_t             *myinfo = NULL;
-        glusterfs_ctx_t         *ctx = NULL;
+        glusterfs_vol_ctx_t     *ctx = NULL;
         sa_family_t              sa_family = {0, };
 
         GF_VALIDATE_OR_GOTO ("socket", this, out);
@@ -3257,7 +3257,7 @@ socket_listen (rpc_transport_t *this)
 
                 rpc_transport_ref (this);
 
-                priv->idx = event_register (ctx->event_pool, priv->sock,
+                priv->idx = event_register (process_ctx.rp.event_pool, priv->sock,
                                             socket_server_event_handler,
                                             this, 1, 0);
 
@@ -3282,13 +3282,13 @@ out:
 static int32_t
 socket_submit_request (rpc_transport_t *this, rpc_transport_req_t *req)
 {
-        socket_private_t *priv = NULL;
-        int               ret = -1;
-        char              need_poll_out = 0;
-        char              need_append = 1;
-        struct ioq       *entry = NULL;
-        glusterfs_ctx_t  *ctx = NULL;
-	char              a_byte = 'j';
+        socket_private_t     *priv = NULL;
+        int                   ret = -1;
+        char                  need_poll_out = 0;
+        char                  need_append = 1;
+        struct ioq           *entry = NULL;
+        glusterfs_vol_ctx_t  *ctx = NULL;
+	char                  a_byte = 'j';
 
         GF_VALIDATE_OR_GOTO ("socket", this, out);
         GF_VALIDATE_OR_GOTO ("socket", this->private, out);
@@ -3340,7 +3340,7 @@ socket_submit_request (rpc_transport_t *this, rpc_transport_req_t *req)
                 }
                 if (!priv->own_thread && need_poll_out) {
                         /* first entry to wait. continue writing on POLLOUT */
-                        priv->idx = event_select_on (ctx->event_pool,
+                        priv->idx = event_select_on (process_ctx.rp.event_pool,
                                                      priv->sock,
                                                      priv->idx, -1, 1);
                 }
@@ -3361,7 +3361,7 @@ socket_submit_reply (rpc_transport_t *this, rpc_transport_reply_t *reply)
         char              need_poll_out = 0;
         char              need_append = 1;
         struct ioq       *entry = NULL;
-        glusterfs_ctx_t  *ctx = NULL;
+        glusterfs_vol_ctx_t  *ctx = NULL;
 	char              a_byte = 'd';
 
         GF_VALIDATE_OR_GOTO ("socket", this, out);
@@ -3414,7 +3414,7 @@ socket_submit_reply (rpc_transport_t *this, rpc_transport_reply_t *reply)
                 }
                 if (!priv->own_thread && need_poll_out) {
                         /* first entry to wait. continue writing on POLLOUT */
-                        priv->idx = event_select_on (ctx->event_pool,
+                        priv->idx = event_select_on (process_ctx.rp.event_pool,
                                                      priv->sock,
                                                      priv->idx, -1, 1);
                 }
@@ -3528,7 +3528,7 @@ socket_throttle (rpc_transport_t *this, gf_boolean_t onoff)
                  * registered fd mapping. */
 
                 if (priv->connected == 1)
-                        priv->idx = event_select_on (this->ctx->event_pool,
+                        priv->idx = event_select_on (process_ctx.rp.event_pool,
                                                      priv->sock,
                                                      priv->idx, (int) !onoff,
                                                      -1);

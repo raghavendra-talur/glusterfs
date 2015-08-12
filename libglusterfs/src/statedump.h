@@ -89,7 +89,7 @@ void inode_dump(inode_t *inode, char *prefix);
 
 void gf_proc_dump_mem_info_to_dict (dict_t *dict);
 
-void gf_proc_dump_mempool_info_to_dict (glusterfs_ctx_t *ctx, dict_t *dict);
+void gf_proc_dump_mempool_info_to_dict (dict_t *dict);
 
 void glusterd_init (int sig);
 

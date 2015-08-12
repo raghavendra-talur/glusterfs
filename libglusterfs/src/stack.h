@@ -102,7 +102,7 @@ struct _call_stack_t {
 	uint32_t                     *groups_large;
 	uint32_t                     *groups;
         gf_lkowner_t                  lk_owner;
-        glusterfs_ctx_t              *ctx;
+        glusterfs_vol_ctx_t          *ctx;
 
         struct list_head              myframes; /* List of call_frame_t that go
                                                    to make the call stack */

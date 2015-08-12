@@ -507,10 +507,7 @@ xlator_mem_acct_init (xlator_t *xl, int num_types)
         if (!xl)
                 return -1;
 
-        if (!xl->ctx)
-                return -1;
-
-        if (!xl->ctx->mem_acct_enable)
+        if (!process_ctx.mem_acct_enable)
                 return 0;
 
 
@@ -625,7 +622,7 @@ xlator_members_free (xlator_t *xl)
  * its mem accounting, which would mean after calling glusterfs_graph_destroy()
  * there cannot be any reference to GF_FREE() from the master xlator, this is
  * not possible because of the following dependencies:
- * - glusterfs_ctx_t will have mem pools allocated by the master xlators
+ * - glusterfs_vol_ctx_t will have mem pools allocated by the master xlators
  * - xlator objects will have references to those mem pools(g: dict)
  *
  * Ordering the freeing in any of the order will also not solve the dependency:
@@ -951,12 +948,12 @@ xlator_destroy (xlator_t *xl)
 int
 is_gf_log_command (xlator_t *this, const char *name, char *value)
 {
-        xlator_t       *trav        = NULL;
-        char            key[1024]   = {0,};
-        int             ret         = -1;
-        int             log_level   = -1;
-        gf_boolean_t    syslog_flag = 0;
-        glusterfs_ctx_t *ctx        = NULL;
+        xlator_t            *trav        = NULL;
+        char                 key[1024]   = {0,};
+        int                  ret         = -1;
+        int                  log_level   = -1;
+        gf_boolean_t         syslog_flag = 0;
+        glusterfs_vol_ctx_t *ctx         = NULL;
 
         if (!strcmp ("trusted.glusterfs.syslog", name)) {
                 ret = gf_string2boolean (value, &syslog_flag);

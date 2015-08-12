@@ -1178,7 +1178,7 @@ int32_t ec_readv_rebuild(ec_t * ec, ec_fop_data_t * fop, ec_cbk_data_t * cbk)
         if (iobref == NULL) {
             goto out;
         }
-        iobuf = iobuf_get2(fop->xl->ctx->iobuf_pool, size);
+        iobuf = iobuf_get2(process_ctx.rp.iobuf_pool, size);
         if (iobuf == NULL) {
             goto out;
         }

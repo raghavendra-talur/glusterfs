@@ -3278,7 +3278,7 @@ shard_post_lookup_readv_handler (call_frame_t *frame, xlator_t *this)
                  */
                 struct iovec      vec        = {0,};
 
-                iobuf = iobuf_get2 (this->ctx->iobuf_pool, local->req_size);
+                iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, local->req_size);
                 if (!iobuf)
                         goto err;
 
@@ -3319,7 +3319,7 @@ shard_post_lookup_readv_handler (call_frame_t *frame, xlator_t *this)
         if (!local->inode_list)
                 goto err;
 
-        iobuf = iobuf_get2 (this->ctx->iobuf_pool, local->total_size);
+        iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, local->total_size);
         if (!iobuf)
                 goto err;
 

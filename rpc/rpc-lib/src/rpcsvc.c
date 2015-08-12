@@ -693,7 +693,7 @@ rpcsvc_handle_rpc_call (rpcsvc_t *svc, rpc_transport_t *trans,
                         if (msg->hdr_iobuf)
                                 req->hdr_iobuf = iobuf_ref (msg->hdr_iobuf);
 
-                        ret = synctask_new (THIS->ctx->env,
+                        ret = synctask_new (process_ctx.rp.env,
                                             (synctask_fn_t) actor_fn,
                                             rpcsvc_check_and_reply_error, NULL,
                                             req);
@@ -968,7 +968,7 @@ rpcsvc_callback_build_record (rpcsvc_t *rpc, int prognum, int progver,
          */
         xdr_size = xdr_sizeof ((xdrproc_t)xdr_callmsg, &request);
 
-        request_iob = iobuf_get2 (rpc->ctx->iobuf_pool, (xdr_size + payload));
+        request_iob = iobuf_get2 (process_ctx.rp.iobuf_pool, (xdr_size + payload));
         if (!request_iob) {
                 goto out;
         }
@@ -998,7 +998,7 @@ out:
 
 int rpcsvc_request_submit (rpcsvc_t *rpc, rpc_transport_t *trans,
                            rpcsvc_cbk_program_t *prog, int procnum,
-                           void *req, glusterfs_ctx_t *ctx,
+                           void *req, glusterfs_vol_ctx_t *ctx,
                            xdrproc_t xdrproc)
 {
         int                     ret         = -1;
@@ -1012,7 +1012,7 @@ int rpcsvc_request_submit (rpcsvc_t *rpc, rpc_transport_t *trans,
 
         xdr_size = xdr_sizeof (xdrproc, req);
 
-        iobuf = iobuf_get2 (ctx->iobuf_pool, xdr_size);
+        iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, xdr_size);
         if (!iobuf)
                 goto out;
 
@@ -1186,7 +1186,7 @@ rpcsvc_record_build_record (rpcsvc_request_t *req, size_t payload,
 
         /* Payload would include 'readv' size etc too, where as
            that comes as another payload iobuf */
-        replyiob = iobuf_get2 (svc->ctx->iobuf_pool, (xdr_size + hdrlen));
+        replyiob = iobuf_get2 (process_ctx.rp.iobuf_pool, (xdr_size + hdrlen));
         if (!replyiob) {
                 goto err_exit;
         }
@@ -2270,7 +2270,7 @@ rpcsvc_get_throttle (rpcsvc_t *svc)
 /* The global RPC service initializer.
  */
 rpcsvc_t *
-rpcsvc_init (xlator_t *xl, glusterfs_ctx_t *ctx, dict_t *options,
+rpcsvc_init (xlator_t *xl, glusterfs_vol_ctx_t *ctx, dict_t *options,
              uint32_t poolcount)
 {
         rpcsvc_t          *svc              = NULL;

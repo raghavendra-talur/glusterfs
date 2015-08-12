@@ -236,6 +236,4 @@ void *mem_get0 (struct mem_pool *pool);
 
 void mem_pool_destroy (struct mem_pool *pool);
 
-void gf_mem_acct_enable_set (void *ctx);
-
 #endif /* _MEM_POOL_H */

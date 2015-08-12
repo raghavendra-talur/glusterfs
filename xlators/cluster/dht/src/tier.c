@@ -2358,7 +2358,7 @@ tier_reconfigure (xlator_t *this, dict_t *options)
 
                         frame->root->pid = GF_CLIENT_PID_DEFRAG;
 
-                        ret = synctask_new (this->ctx->env, tier_cli_pause,
+                        ret = synctask_new (process_ctx.rp.env, tier_cli_pause,
                                             tier_cli_pause_done, frame, this);
 
                         if (ret) {

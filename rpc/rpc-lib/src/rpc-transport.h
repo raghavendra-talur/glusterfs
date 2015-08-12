@@ -189,7 +189,7 @@ struct rpc_transport {
 
         int32_t                    outstanding_rpc_count;
 
-        glusterfs_ctx_t           *ctx;
+        glusterfs_vol_ctx_t       *ctx;
         dict_t                    *options;
         char                      *name;
         void                      *dnscache;
@@ -265,7 +265,7 @@ rpc_transport_submit_reply (rpc_transport_t *this,
                             rpc_transport_reply_t *reply);
 
 rpc_transport_t *
-rpc_transport_load (glusterfs_ctx_t *ctx, dict_t *options, char *name);
+rpc_transport_load (glusterfs_vol_ctx_t *ctx, dict_t *options, char *name);
 
 rpc_transport_t *
 rpc_transport_ref   (rpc_transport_t *trans);

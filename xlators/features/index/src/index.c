@@ -1253,7 +1253,7 @@ index_readdir_wrapper (call_frame_t *frame, xlator_t *this,
         if (xdata && dict_get (xdata, "get-gfid-type")) {
                 args.parent = fd->inode;
                 args.entries = &entries;
-                ret = synctask_new (this->ctx->env, index_get_gfid_type,
+                ret = synctask_new (process_ctx.rp.env, index_get_gfid_type,
                                     NULL, NULL, &args);
         }
 done:

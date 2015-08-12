@@ -2442,7 +2442,7 @@ marker_do_xattr_cleanup (call_frame_t *frame, xlator_t *this, dict_t *xdata,
         MARKER_INIT_LOCAL (frame, local);
 
         loc_copy (&local->loc, loc);
-        ret = synctask_new (this->ctx->env, quota_xattr_cleaner,
+        ret = synctask_new (process_ctx.rp.env, quota_xattr_cleaner,
 			    quota_xattr_cleaner_cbk, frame, xdata);
         if (ret) {
 		gf_log (this->name, GF_LOG_ERROR, "Failed to create synctask "

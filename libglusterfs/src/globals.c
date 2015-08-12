@@ -72,7 +72,11 @@ const char *gf_fop_list[GF_FOP_MAXVALUE] = {
 };
 /* THIS */
 
-xlator_t global_xlator;
+glusterfs_process_ctx_t process_ctx = {
+        .lock = PTHREAD_MUTEX_INITIALIZER,
+        .rp = {PTHREAD_MUTEX_INITIALIZER, 0,},
+        0,};
+
 static pthread_key_t this_xlator_key;
 static pthread_key_t synctask_key;
 static pthread_key_t uuid_buf_key;
@@ -106,7 +110,8 @@ glusterfs_this_destroy (void *ptr)
 int
 glusterfs_this_init ()
 {
-        int  ret = 0;
+        int                 ret = 0;
+        xlator_t *global_xlator = NULL;
 
         ret = pthread_key_create (&this_xlator_key, glusterfs_this_destroy);
         if (ret != 0) {
@@ -116,10 +121,11 @@ glusterfs_this_init ()
                 return ret;
         }
 
-        global_xlator.name = "glusterfs";
-        global_xlator.type = "global";
+        global_xlator = (xlator_t *)&process_ctx.global_xlator;
+        global_xlator->name = "glusterfs";
+        global_xlator->type = "global";
 
-        INIT_LIST_HEAD (&global_xlator.volume_options);
+        INIT_LIST_HEAD (&global_xlator->volume_options);
 
         return ret;
 }
@@ -148,7 +154,7 @@ __glusterfs_this_location ()
 out:
         if (this_location) {
                 if (!*this_location)
-                        *this_location = &global_xlator;
+                        *this_location = process_ctx.global_xlator;
         }
         return this_location;
 }
@@ -161,7 +167,7 @@ glusterfs_this_get ()
 
         this_location = __glusterfs_this_location ();
         if (!this_location)
-                return &global_xlator;
+                return process_ctx.global_xlator;
 
         return *this_location;
 }
@@ -379,11 +385,11 @@ out:
 }
 
 int
-glusterfs_globals_init (glusterfs_ctx_t *ctx)
+glusterfs_globals_init ()
 {
         int ret = 0;
 
-        gf_log_globals_init (ctx);
+        //gf_log_globals_init (ctx);
 
         ret =  pthread_once (&globals_inited, gf_globals_init_once);
 

@@ -304,16 +304,16 @@ gf_log_set_log_buf_size (uint32_t buf_size);
 void
 gf_log_set_log_flush_timeout (uint32_t timeout);
 
-struct _glusterfs_ctx;
+struct _glusterfs_vol_ctx;
 
 void
-gf_log_flush_msgs (struct _glusterfs_ctx *ctx);
+gf_log_flush_msgs (struct _glusterfs_vol_ctx *ctx);
 
 int
-gf_log_inject_timer_event (struct _glusterfs_ctx *ctx);
+gf_log_inject_timer_event (struct _glusterfs_vol_ctx *ctx);
 
 void
-gf_log_disable_suppression_before_exit (struct _glusterfs_ctx *ctx);
+gf_log_disable_suppression_before_exit (struct _glusterfs_vol_ctx *ctx);
 
 #define GF_DEBUG(xl, format, args...)                           \
         gf_log ((xl)->name, GF_LOG_DEBUG, format, ##args)

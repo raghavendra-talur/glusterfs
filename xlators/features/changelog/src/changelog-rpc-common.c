@@ -26,9 +26,7 @@
 void *
 changelog_rpc_poller (void *arg)
 {
-        xlator_t *this = arg;
-
-        (void) event_dispatch (this->ctx->event_pool);
+        (void) event_dispatch (process_ctx.rp.event_pool);
         return NULL;
 }
 
@@ -108,7 +106,7 @@ changelog_rpc_sumbit_req (struct rpc_clnt *rpc, void *req,
         if (req) {
                 xdr_size = xdr_sizeof (xdrproc, req);
 
-                iobuf = iobuf_get2 (this->ctx->iobuf_pool, xdr_size);
+                iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, xdr_size);
                 if (!iobuf) {
                         goto out;
                 };
@@ -197,7 +195,7 @@ __changelog_rpc_serialize_reply (rpcsvc_request_t *req, void *arg,
         ssize_t       rsp_size = 0;
 
         rsp_size = xdr_sizeof (xdrproc, arg);
-        iob = iobuf_get2 (req->svc->ctx->iobuf_pool, rsp_size);
+        iob = iobuf_get2 (process_ctx.rp.iobuf_pool, rsp_size);
         if (!iob)
                 goto error_return;
 

@@ -157,6 +157,10 @@ enum gf_common_mem_types_ {
         gf_common_mt_synctask,
         gf_common_mt_syncstack,
         gf_common_mt_syncenv,
+        gf_common_mt_call_pool_t,
+        gf_common_mt_server_cmdline_t,
+        gf_common_mt_xlator_cmdline_option_t,
+        gf_common_mt_vol_ctx_t,
         gf_common_mt_end
 };
 #endif

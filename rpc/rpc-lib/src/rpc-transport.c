@@ -167,7 +167,7 @@ out:
 
 
 rpc_transport_t *
-rpc_transport_load (glusterfs_ctx_t *ctx, dict_t *options, char *trans_name)
+rpc_transport_load (glusterfs_vol_ctx_t *ctx, dict_t *options, char *trans_name)
 {
 	struct rpc_transport *trans = NULL, *return_trans = NULL;
 	char *name = NULL;

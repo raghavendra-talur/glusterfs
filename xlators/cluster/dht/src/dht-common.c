@@ -345,7 +345,7 @@ dht_discover_complete (xlator_t *this, call_frame_t *discover_frame)
                         heal_local->inode = inode_ref (loc.inode);
                         heal_local->main_frame = main_frame;
                         FRAME_SU_DO (heal_frame, dht_local_t);
-                        ret = synctask_new (this->ctx->env,
+                        ret = synctask_new (process_ctx.rp.env,
                                             dht_heal_full_path,
                                             dht_heal_full_path_done,
                                             heal_frame, heal_frame);
@@ -932,7 +932,7 @@ out:
                                 copy_local->stbuf = local->stbuf;
                                 copy->local = copy_local;
                                 FRAME_SU_DO (copy, dht_local_t);
-                                ret = synctask_new (this->ctx->env,
+                                ret = synctask_new (process_ctx.rp.env,
                                                     dht_dir_attr_heal,
                                                     dht_dir_attr_heal_done,
                                                     copy, copy);

@@ -15,7 +15,7 @@
 #include "glusterfs.h"
 
 int
-glusterfs_global_timer_wheel_init (glusterfs_ctx_t *);
+glusterfs_global_timer_wheel_init ();
 
 struct tvec_base *
 glusterfs_global_timer_wheel (xlator_t *);

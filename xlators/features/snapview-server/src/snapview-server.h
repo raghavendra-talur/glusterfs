@@ -113,7 +113,7 @@
 
 int
 svs_mgmt_submit_request (void *req, call_frame_t *frame,
-                         glusterfs_ctx_t *ctx,
+                         glusterfs_vol_ctx_t *ctx,
                          rpc_clnt_prog_t *prog, int procnum,
                          fop_cbk_fn_t cbkfn, xdrproc_t xdrproc);
 
