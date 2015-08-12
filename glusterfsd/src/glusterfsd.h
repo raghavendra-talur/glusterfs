@@ -106,9 +106,9 @@ struct _gfd_vol_top_priv_t {
 };
 typedef struct _gfd_vol_top_priv_t gfd_vol_top_priv_t;
 
-int glusterfs_mgmt_pmap_signout (glusterfs_ctx_t *ctx);
-int glusterfs_mgmt_pmap_signin (glusterfs_ctx_t *ctx);
-int glusterfs_volfile_fetch (glusterfs_ctx_t *ctx);
+int glusterfs_mgmt_pmap_signout (glusterfs_vol_ctx_t *ctx);
+int glusterfs_mgmt_pmap_signin (glusterfs_vol_ctx_t *ctx);
+int glusterfs_volfile_fetch (glusterfs_vol_ctx_t *ctx);
 void cleanup_and_exit (int signum);
 
 int glusterfs_volume_top_write_perf (uint32_t blk_size, uint32_t blk_count,
@@ -118,5 +118,5 @@ int glusterfs_volume_top_read_perf (uint32_t blk_size, uint32_t blk_count,
                                     char *brick_path, double *throughput,
                                     double *time);
 
-extern glusterfs_ctx_t *glusterfsd_ctx;
+extern glusterfs_vol_ctx_t *glusterfsd_ctx;
 #endif /* __GLUSTERFSD_H__ */

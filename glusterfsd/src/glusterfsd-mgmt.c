@@ -37,16 +37,16 @@
 static gf_boolean_t is_mgmt_rpc_reconnect = _gf_false;
 int need_emancipate = 0;
 
-int glusterfs_mgmt_pmap_signin (glusterfs_ctx_t *ctx);
-int glusterfs_volfile_fetch (glusterfs_ctx_t *ctx);
-int glusterfs_process_volfp (glusterfs_ctx_t *ctx, FILE *fp);
+int glusterfs_mgmt_pmap_signin (glusterfs_vol_ctx_t *ctx);
+int glusterfs_volfile_fetch (glusterfs_vol_ctx_t *ctx);
+int glusterfs_process_volfp (glusterfs_vol_ctx_t *ctx, FILE *fp);
 int glusterfs_graph_unknown_options (glusterfs_graph_t *graph);
-int emancipate(glusterfs_ctx_t *ctx, int ret);
+int emancipate (int ret);
 
 int
 mgmt_cbk_spec (struct rpc_clnt *rpc, void *mydata, void *data)
 {
-        glusterfs_ctx_t *ctx = NULL;
+        glusterfs_vol_ctx_t *ctx = NULL;
         xlator_t *this = NULL;
 
         this = mydata;
@@ -76,7 +76,7 @@ glusterfs_serialize_reply (rpcsvc_request_t *req, void *arg,
          * be serialized.
          */
         xdr_size = xdr_sizeof (xdrproc, arg);
-        iob = iobuf_get2 (req->svc->ctx->iobuf_pool, xdr_size);
+        iob = iobuf_get2 (process_ctx.rp.iobuf_pool, xdr_size);
         if (!iob) {
                 gf_log (THIS->name, GF_LOG_ERROR, "Failed to get iobuf");
                 goto ret;
@@ -275,7 +275,7 @@ glusterfs_handle_translator_info_get (rpcsvc_request_t *req)
         xlator_t                *any = NULL;
         xlator_t                *xlator = NULL;
         glusterfs_graph_t       *active = NULL;
-        glusterfs_ctx_t         *ctx = NULL;
+        glusterfs_vol_ctx_t     *ctx = NULL;
         char                    msg[2048] = {0,};
         dict_t                  *output = NULL;
 
@@ -567,7 +567,7 @@ glusterfs_handle_translator_op (rpcsvc_request_t *req)
         dict_t                   *output = NULL;
         char                     key[2048] = {0};
         char                    *xname = NULL;
-        glusterfs_ctx_t          *ctx = NULL;
+        glusterfs_vol_ctx_t      *ctx = NULL;
         glusterfs_graph_t        *active = NULL;
         xlator_t                 *this = NULL;
         int                      i = 0;
@@ -738,7 +738,7 @@ glusterfs_handle_defrag (rpcsvc_request_t *req)
         xlator_t                 *any = NULL;
         dict_t                   *output = NULL;
         char                     msg[2048] = {0};
-        glusterfs_ctx_t          *ctx = NULL;
+        glusterfs_vol_ctx_t      *ctx = NULL;
         glusterfs_graph_t        *active = NULL;
         xlator_t                 *this = NULL;
 
@@ -810,7 +810,7 @@ glusterfs_handle_brick_status (rpcsvc_request_t *req)
         int                     ret = -1;
         gd1_mgmt_brick_op_req   brick_req = {0,};
         gd1_mgmt_brick_op_rsp   rsp = {0,};
-        glusterfs_ctx_t         *ctx = NULL;
+        glusterfs_vol_ctx_t     *ctx = NULL;
         glusterfs_graph_t       *active = NULL;
         xlator_t                *this = NULL;
         xlator_t                *any = NULL;
@@ -879,7 +879,7 @@ glusterfs_handle_brick_status (rpcsvc_request_t *req)
                 case GF_CLI_STATUS_MEM:
                         ret = 0;
                         gf_proc_dump_mem_info_to_dict (output);
-                        gf_proc_dump_mempool_info_to_dict (ctx, output);
+                        gf_proc_dump_mempool_info_to_dict (output);
                         break;
 
                 case GF_CLI_STATUS_CLIENTS:
@@ -943,7 +943,7 @@ glusterfs_handle_node_status (rpcsvc_request_t *req)
         int                     ret = -1;
         gd1_mgmt_brick_op_req   node_req = {0,};
         gd1_mgmt_brick_op_rsp   rsp = {0,};
-        glusterfs_ctx_t         *ctx = NULL;
+        glusterfs_vol_ctx_t     *ctx = NULL;
         glusterfs_graph_t       *active = NULL;
         xlator_t                *any = NULL;
         xlator_t                *node = NULL;
@@ -1053,7 +1053,7 @@ glusterfs_handle_node_status (rpcsvc_request_t *req)
                 case GF_CLI_STATUS_MEM:
                         ret = 0;
                         gf_proc_dump_mem_info_to_dict (output);
-                        gf_proc_dump_mempool_info_to_dict (ctx, output);
+                        gf_proc_dump_mempool_info_to_dict (output);
                         break;
 
                 case GF_CLI_STATUS_CLIENTS:
@@ -1132,7 +1132,7 @@ glusterfs_handle_nfs_profile (rpcsvc_request_t *req)
         gd1_mgmt_brick_op_req   nfs_req = {0,};
         gd1_mgmt_brick_op_rsp   rsp = {0,};
         dict_t                  *dict = NULL;
-        glusterfs_ctx_t         *ctx = NULL;
+        glusterfs_vol_ctx_t     *ctx = NULL;
         glusterfs_graph_t       *active = NULL;
         xlator_t                *any = NULL;
         xlator_t                *nfs = NULL;
@@ -1229,7 +1229,7 @@ glusterfs_handle_volume_barrier_op (rpcsvc_request_t *req)
         xlator_t                 *any = NULL;
         dict_t                   *output = NULL;
         char                     msg[2048] = {0};
-        glusterfs_ctx_t          *ctx = NULL;
+        glusterfs_vol_ctx_t      *ctx = NULL;
         glusterfs_graph_t        *active = NULL;
         xlator_t                 *this = NULL;
 
@@ -1303,7 +1303,7 @@ glusterfs_handle_barrier (rpcsvc_request_t *req)
         int                     ret         = -1;
         gd1_mgmt_brick_op_req   brick_req   = {0,};
         gd1_mgmt_brick_op_rsp   brick_rsp   = {0,};
-        glusterfs_ctx_t         *ctx        = NULL;
+        glusterfs_vol_ctx_t     *ctx        = NULL;
         glusterfs_graph_t       *active     = NULL;
         xlator_t                *any        = NULL;
         xlator_t                *xlator     = NULL;
@@ -1494,7 +1494,7 @@ struct rpcsvc_program glusterfs_mop_prog = {
 
 int
 mgmt_submit_request (void *req, call_frame_t *frame,
-                     glusterfs_ctx_t *ctx,
+                     glusterfs_vol_ctx_t *ctx,
                      rpc_clnt_prog_t *prog, int procnum,
                      fop_cbk_fn_t cbkfn, xdrproc_t xdrproc)
 {
@@ -1513,7 +1513,7 @@ mgmt_submit_request (void *req, call_frame_t *frame,
         if (req) {
                 xdr_size = xdr_sizeof (xdrproc, req);
 
-                iobuf = iobuf_get2 (ctx->iobuf_pool, xdr_size);
+                iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, xdr_size);
                 if (!iobuf) {
                         goto out;
                 };
@@ -1560,7 +1560,7 @@ mgmt_getspec_cbk (struct rpc_req *req, struct iovec *iov, int count,
 {
         gf_getspec_rsp           rsp   = {0,};
         call_frame_t            *frame = NULL;
-        glusterfs_ctx_t         *ctx = NULL;
+        glusterfs_vol_ctx_t     *ctx = NULL;
         int                      ret   = 0;
         ssize_t                  size = 0;
         FILE                    *tmpfp = NULL;
@@ -1670,6 +1670,8 @@ out:
 
         free (rsp.spec);
 
+        emancipate (ret);
+
         // Stop if server is running at an unsupported op-version
         if (ENOTSUP == ret) {
                 gf_log ("mgmt", GF_LOG_ERROR, "Server is operating at an "
@@ -1696,7 +1698,7 @@ out:
 
 
 int
-glusterfs_volfile_fetch (glusterfs_ctx_t *ctx)
+glusterfs_volfile_fetch (glusterfs_vol_ctx_t *ctx)
 {
         cmd_args_t       *cmd_args = NULL;
         gf_getspec_req    req = {0, };
@@ -1769,7 +1771,7 @@ mgmt_event_notify_cbk (struct rpc_req *req, struct iovec *iov, int count,
 {
         gf_event_notify_rsp      rsp   = {0,};
         call_frame_t            *frame = NULL;
-        glusterfs_ctx_t         *ctx = NULL;
+        glusterfs_vol_ctx_t     *ctx = NULL;
         int                      ret   = 0;
 
         frame = myframe;
@@ -1805,7 +1807,7 @@ glusterfs_rebalance_event_notify_cbk (struct rpc_req *req, struct iovec *iov,
 {
         gf_event_notify_rsp      rsp   = {0,};
         call_frame_t            *frame = NULL;
-        glusterfs_ctx_t         *ctx = NULL;
+        glusterfs_vol_ctx_t     *ctx = NULL;
         int                      ret   = 0;
 
         frame = myframe;
@@ -1846,7 +1848,7 @@ out:
 int32_t
 glusterfs_rebalance_event_notify (dict_t *dict)
 {
-        glusterfs_ctx_t         *ctx = NULL;
+        glusterfs_vol_ctx_t     *ctx = NULL;
         gf_event_notify_req      req = {0,};
         int32_t                  ret = -1;
         cmd_args_t              *cmd_args = NULL;
@@ -1882,13 +1884,13 @@ static int
 mgmt_rpc_notify (struct rpc_clnt *rpc, void *mydata, rpc_clnt_event_t event,
                  void *data)
 {
-        xlator_t         *this = NULL;
-        glusterfs_ctx_t  *ctx = NULL;
-        int              ret = 0;
-        server_cmdline_t *server = NULL;
-        rpc_transport_t  *rpc_trans = NULL;
-        int              need_term = 0;
-        int              emval = 0;
+        xlator_t             *this = NULL;
+        glusterfs_vol_ctx_t  *ctx = NULL;
+        int                   ret = 0;
+        server_cmdline_t     *server = NULL;
+        rpc_transport_t      *rpc_trans = NULL;
+        int                   need_term = 0;
+        int                   emval = 0;
         struct dnscache6 *dnscache = NULL;
 
         this = mydata;
@@ -1966,7 +1968,7 @@ mgmt_rpc_notify (struct rpc_clnt *rpc, void *mydata, rpc_clnt_event_t event,
         }
 
         if (need_term) {
-                emancipate (ctx, emval);
+                emancipate (emval);
                 cleanup_and_exit (1);
         }
 
@@ -2000,7 +2002,7 @@ out:
 }
 
 int
-glusterfs_listener_init (glusterfs_ctx_t *ctx)
+glusterfs_listener_init (glusterfs_vol_ctx_t *ctx)
 {
         cmd_args_t              *cmd_args = NULL;
         rpcsvc_t                *rpc = NULL;
@@ -2048,7 +2050,7 @@ out:
 }
 
 int
-glusterfs_listener_stop (glusterfs_ctx_t *ctx)
+glusterfs_listener_stop (glusterfs_vol_ctx_t *ctx)
 {
         cmd_args_t              *cmd_args = NULL;
         rpcsvc_t                *rpc = NULL;
@@ -2108,7 +2110,7 @@ glusterfs_mgmt_notify (int32_t op, void *data, ...)
 }
 
 int
-glusterfs_mgmt_init (glusterfs_ctx_t *ctx)
+glusterfs_mgmt_init (glusterfs_vol_ctx_t *ctx)
 {
         cmd_args_t              *cmd_args = NULL;
         struct rpc_clnt         *rpc = NULL;
@@ -2215,14 +2217,14 @@ static int
 mgmt_pmap_signin_cbk (struct rpc_req *req, struct iovec *iov, int count,
                       void *myframe)
 {
-        pmap_signin_rsp  rsp   = {0,};
-        call_frame_t    *frame = NULL;
-        int              ret   = 0;
-        int              emancipate_ret  = -1;
-        pmap_signin_req  pmap_req = {0, };
-        cmd_args_t      *cmd_args = NULL;
-        glusterfs_ctx_t *ctx      = NULL;
-        char             brick_name[PATH_MAX] = {0,};
+        pmap_signin_rsp      rsp   = {0,};
+        call_frame_t        *frame = NULL;
+        int                  ret   = 0;
+        int                  emancipate_ret  = -1;
+        pmap_signin_req      pmap_req = {0, };
+        cmd_args_t          *cmd_args = NULL;
+        glusterfs_vol_ctx_t *ctx      = NULL;
+        char                 brick_name[PATH_MAX] = {0,};
 
         frame = myframe;
         ctx = glusterfsd_ctx;
@@ -2278,7 +2280,7 @@ out:
 }
 
 int
-glusterfs_mgmt_pmap_signin (glusterfs_ctx_t *ctx)
+glusterfs_mgmt_pmap_signin (glusterfs_vol_ctx_t *ctx)
 {
         call_frame_t     *frame                 = NULL;
         pmap_signin_req   req                   = {0, };
@@ -2322,9 +2324,9 @@ static int
 mgmt_pmap_signout_cbk (struct rpc_req *req, struct iovec *iov, int count,
                        void *myframe)
 {
-        pmap_signout_rsp  rsp   = {0,};
-        int              ret   = 0;
-        glusterfs_ctx_t  *ctx = NULL;
+        pmap_signout_rsp      rsp   = {0,};
+        int                   ret   = 0;
+        glusterfs_vol_ctx_t  *ctx = NULL;
 
         if (-1 == req->rpc_status) {
                 rsp.op_ret   = -1;
@@ -2352,7 +2354,7 @@ out:
 
 
 int
-glusterfs_mgmt_pmap_signout (glusterfs_ctx_t *ctx)
+glusterfs_mgmt_pmap_signout (glusterfs_vol_ctx_t *ctx)
 {
         int               ret = 0;
         pmap_signout_req  req = {0, };
