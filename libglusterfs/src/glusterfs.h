@@ -34,6 +34,10 @@
 #include "lkowner.h"
 #include "compat-uuid.h"
 
+#define PROCESS_CTX_UNINIT 0
+#define PROCESS_CTX_INIT   1
+#define PROCESS_CTX_FINI   2
+
 #define GF_YES 1
 #define GF_NO  0
 
@@ -532,52 +536,27 @@ typedef enum {
 
 struct tvec_base;
 
-struct _glusterfs_ctx {
-        cmd_args_t          cmd_args;
-        char               *process_uuid;
-        FILE               *pidfp;
-        char                fin;
-        void               *timer;
-        void               *ib;
-        struct call_pool   *pool;
-        void               *event_pool;
-        void               *iobuf_pool;
-        void               *logbuf_pool;
+struct _glusterfs_vol_ctx {
         pthread_mutex_t     lock;
-        size_t              page_size;
+
+        struct list_head    list;
+        char               *process_uuid; /*TODO: name it appropriately*/
+        cmd_args_t          cmd_args;
         struct list_head    graphs; /* double linked list of graphs - one per volfile parse */
         glusterfs_graph_t  *active; /* the latest graph in use */
         void               *master; /* fuse, or libglusterfsclient (however, not protocol/server) */
         void               *mgmt;   /* xlator implementing MOPs for centralized logging, volfile server */
         void               *listener; /* listener of the commands from glusterd */
         unsigned char       measure_latency; /* toggle switch for latency measurement */
-        pthread_t           sigwaiter;
-	char               *cmdlinestr;
-        struct mem_pool    *stub_mem_pool;
         unsigned char       cleanup_started;
         int                 graph_id; /* Incremented per graph, value should
                                          indicate how many times the graph has
                                          got changed */
-        pid_t               mnt_pid; /* pid of the mount agent */
-        int                 process_mode; /*mode in which process is runninng*/
-        struct syncenv     *env;          /* The env pointer to the synctasks */
-
-        struct list_head    mempool_list; /* used to keep a global list of
-                                             mempools, used to log details of
-                                             mempool in statedump */
-        char               *statedump_path;
-
-        struct mem_pool    *dict_pool;
-        struct mem_pool    *dict_pair_pool;
-        struct mem_pool    *dict_data_pool;
+        struct call_pool   *pool;
 
         glusterfsd_mgmt_event_notify_fn_t notify; /* Used for xlators to make
                                                      call to fsd-mgmt */
         gf_log_handle_t     log; /* all logging related variables */
-
-        int                 mem_acct_enable;
-
-        int                 daemon_pipe[2];
 
         struct clienttable *clienttable;
 
@@ -599,19 +578,70 @@ struct _glusterfs_ctx {
          * NFS.
          */
         mgmt_ssl_t          secure_srvr;
-        /* Buffer to 'save' backtrace even under OOM-kill like situations*/
-        char btbuf[GF_BACKTRACE_LEN];
 
-        pthread_mutex_t notify_lock;
-        pthread_cond_t notify_cond;
-        int notifying;
-
-        struct tvec_base *timer_wheel; /* global timer-wheel instance */
-
+        void               *init_xlator; /* default THIS for this ctx, and xlator for
+                                          * accounting all the memory allocated
+                                          * before master/server xl is created
+                                          */
+        pthread_mutex_t     notify_lock;
+        pthread_cond_t      notify_cond;
+        int                 notifying;
 };
-typedef struct _glusterfs_ctx glusterfs_ctx_t;
+typedef struct _glusterfs_vol_ctx glusterfs_vol_ctx_t;
 
-glusterfs_ctx_t *glusterfs_ctx_new (void);
+struct _resource_pool {
+        pthread_mutex_t     lock;
+
+        void               *timer;
+        pthread_t           sigwaiter;
+        struct syncenv     *env;          /* The env pointer to the synctasks */
+        void               *event_pool;
+        pthread_t           poller;
+        struct tvec_base   *timer_wheel; /* global timer-wheel instance */
+
+        size_t              page_size;
+
+        void               *iobuf_pool;
+        void               *logbuf_pool;
+        struct mem_pool    *stub_mem_pool;
+        struct mem_pool    *dict_pool;
+        struct mem_pool    *dict_pair_pool;
+        struct mem_pool    *dict_data_pool;
+        struct list_head    mempool_list; /* used to keep a global list of
+                                             mempools, used to log details of
+                                             mempool in statedump */
+};
+typedef struct _resource_pool resource_pool_t;
+
+struct _glusterfs_process_ctx {
+        pthread_mutex_t     lock;
+
+        resource_pool_t     rp;
+
+        int                 init;
+
+        char               *cmdlinestr;
+
+        FILE               *pidfp;
+        pid_t               mnt_pid; /* pid of the mount agent */
+        char               *pid_file;
+        int                 process_mode; /*mode in which process is runninng*/
+
+        char               *statedump_path;
+        /* Buffer to 'save' backtrace even under OOM-kill like situations*/
+        char                btbuf[GF_BACKTRACE_LEN];
+
+        int                 mem_acct_enable;
+        void               *global_xlator; /* default THIS until any ctx is created,
+                                            * and for accounting all the memory
+                                            * allocated before ctx is allocated
+                                            */
+        void               *ib;
+        int                 daemon_pipe[2];
+
+        struct list_head    instances;
+};
+typedef struct _glusterfs_process_ctx glusterfs_process_ctx_t;
 
 typedef enum {
         GF_EVENT_PARENT_UP = 1,
@@ -675,15 +705,20 @@ struct gf_flock {
  */
 #define SECURE_ACCESS_FILE     GLUSTERD_DEFAULT_WORKDIR "/secure-access"
 
-int glusterfs_graph_prepare (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx);
+int glusterfs_graph_prepare (glusterfs_graph_t *graph, glusterfs_vol_ctx_t *ctx);
 int glusterfs_graph_destroy_residual (glusterfs_graph_t *graph);
 int glusterfs_graph_deactivate (glusterfs_graph_t *graph);
 int glusterfs_graph_destroy (glusterfs_graph_t *graph);
 int glusterfs_get_leaf_count (glusterfs_graph_t *graph);
-int glusterfs_graph_activate (glusterfs_graph_t *graph, glusterfs_ctx_t *ctx);
+int glusterfs_graph_activate (glusterfs_graph_t *graph, glusterfs_vol_ctx_t *ctx);
 glusterfs_graph_t *glusterfs_graph_construct (FILE *fp);
 glusterfs_graph_t *glusterfs_graph_new ();
 int glusterfs_graph_reconfigure (glusterfs_graph_t *oldgraph,
                                   glusterfs_graph_t *newgraph);
+
+int glusterfs_process_ctx_unref (glusterfs_vol_ctx_t *ctx);
+int glusterfs_process_ctx_ref (glusterfs_vol_ctx_t *ctx);
+void glusterfs_vol_ctx_destroy (glusterfs_vol_ctx_t *ctx);
+void __glusterfs_process_ctx_uninit ();
 
 #endif /* _GLUSTERFS_H */
