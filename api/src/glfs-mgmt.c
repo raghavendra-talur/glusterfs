@@ -44,10 +44,10 @@ int32_t glfs_get_volume_info_rpc (call_frame_t *frame, xlator_t *this,
 int
 glfs_process_volfp (struct glfs *fs, FILE *fp)
 {
-	glusterfs_graph_t  *graph = NULL;
-	int		    ret = -1;
-	xlator_t	   *trav = NULL;
-	glusterfs_ctx_t	   *ctx = NULL;
+	glusterfs_graph_t   *graph = NULL;
+	int	 	     ret = -1;
+	xlator_t            *trav = NULL;
+	glusterfs_vol_ctx_t *ctx = NULL;
 
 	ctx = fs->ctx;
 	graph = glusterfs_graph_construct (fp);
@@ -150,7 +150,7 @@ rpc_clnt_prog_t clnt_handshake_prog = {
 
 int
 mgmt_submit_request (void *req, call_frame_t *frame,
-		     glusterfs_ctx_t *ctx,
+		     glusterfs_vol_ctx_t *ctx,
 		     rpc_clnt_prog_t *prog, int procnum,
 		     fop_cbk_fn_t cbkfn, xdrproc_t xdrproc)
 {
@@ -169,7 +169,7 @@ mgmt_submit_request (void *req, call_frame_t *frame,
 	if (req) {
 		xdr_size = xdr_sizeof (xdrproc, req);
 
-		iobuf = iobuf_get2 (ctx->iobuf_pool, xdr_size);
+		iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, xdr_size);
 		if (!iobuf) {
 			goto out;
 		};
@@ -218,7 +218,7 @@ mgmt_get_volinfo_cbk (struct rpc_req *req, struct iovec *iov,
         char                       key[1024]            = {0};
         gf_get_volume_info_rsp     rsp                  = {0,};
         call_frame_t               *frame               = NULL;
-        glusterfs_ctx_t            *ctx                 = NULL;
+        glusterfs_vol_ctx_t        *ctx                 = NULL;
         struct glfs                *fs                  = NULL;
         struct syncargs            *args;
 
@@ -389,10 +389,10 @@ GFAPI_SYMVER_PUBLIC_DEFAULT(glfs_get_volumeid, 3.5.0);
 int
 glfs_get_volume_info (struct glfs *fs)
 {
-        call_frame_t     *frame = NULL;
-        glusterfs_ctx_t  *ctx   = NULL;
-        struct syncargs  args   = {0, };
-        int              ret    = 0;
+        call_frame_t         *frame = NULL;
+        glusterfs_vol_ctx_t  *ctx   = NULL;
+        struct syncargs       args   = {0, };
+        int                   ret    = 0;
 
         ctx = fs->ctx;
         frame = create_frame (THIS, ctx->pool);
@@ -425,11 +425,11 @@ int32_t
 glfs_get_volume_info_rpc (call_frame_t *frame, xlator_t *this,
                           struct glfs *fs)
 {
-        gf_get_volume_info_req  req       = {{0,}};
-        int                     ret       = 0;
-        glusterfs_ctx_t         *ctx      = NULL;
-        dict_t                  *dict     = NULL;
-        int32_t                 flags     = 0;
+        gf_get_volume_info_req       req       = {{0,}};
+        int                          ret       = 0;
+        glusterfs_vol_ctx_t         *ctx      = NULL;
+        dict_t                      *dict     = NULL;
+        int32_t                      flags     = 0;
 
         if (!frame || !this || !fs) {
                 ret = -1;
@@ -511,7 +511,7 @@ glfs_mgmt_getspec_cbk (struct rpc_req *req, struct iovec *iov, int count,
 {
 	gf_getspec_rsp		 rsp   = {0,};
 	call_frame_t		*frame = NULL;
-	glusterfs_ctx_t		*ctx = NULL;
+	glusterfs_vol_ctx_t     *ctx = NULL;
 	int			 ret   = 0;
 	ssize_t			 size = 0;
 	FILE			*tmpfp = NULL;
@@ -647,12 +647,12 @@ out:
 int
 glfs_volfile_fetch (struct glfs *fs)
 {
-	cmd_args_t	 *cmd_args = NULL;
-	gf_getspec_req	  req = {0, };
-	int		  ret = 0;
-	call_frame_t	 *frame = NULL;
-	glusterfs_ctx_t	 *ctx = NULL;
-        dict_t           *dict = NULL;
+	cmd_args_t	     *cmd_args = NULL;
+	gf_getspec_req	      req = {0, };
+	int		      ret = 0;
+	call_frame_t	     *frame = NULL;
+	glusterfs_vol_ctx_t  *ctx = NULL;
+        dict_t               *dict = NULL;
 
 	ctx = fs->ctx;
 	cmd_args = &ctx->cmd_args;
@@ -707,12 +707,12 @@ static int
 mgmt_rpc_notify (struct rpc_clnt *rpc, void *mydata, rpc_clnt_event_t event,
 		 void *data)
 {
-	xlator_t	*this = NULL;
-	glusterfs_ctx_t *ctx = NULL;
-        server_cmdline_t *server = NULL;
-        rpc_transport_t  *rpc_trans = NULL;
-	struct glfs	 *fs = NULL;
-	int		 ret = 0;
+	xlator_t            *this = NULL;
+	glusterfs_vol_ctx_t *ctx = NULL;
+        server_cmdline_t    *server = NULL;
+        rpc_transport_t     *rpc_trans = NULL;
+	struct glfs	    *fs = NULL;
+	int		     ret = 0;
 	struct dnscache6 *dnscache = NULL;
 
 	this = mydata;
@@ -856,7 +856,7 @@ glfs_mgmt_init (struct glfs *fs)
 	int			ret = -1;
 	int			port = GF_DEFAULT_BASE_PORT;
 	char			*host = NULL;
-	glusterfs_ctx_t		*ctx = NULL;
+	glusterfs_vol_ctx_t	*ctx = NULL;
 
 	ctx = fs->ctx;
 	cmd_args = &ctx->cmd_args;

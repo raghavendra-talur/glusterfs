@@ -175,7 +175,7 @@ struct glfs {
 	char               *volname;
         uuid_t              vol_uuid;
 
-	glusterfs_ctx_t    *ctx;
+	glusterfs_vol_ctx_t *ctx;
 
 	pthread_t           poller;
 
@@ -381,7 +381,7 @@ int glfs_get_volume_info (struct glfs *fs);
        NULL   : Otherwise.
 */
 
-struct glfs *glfs_new_from_ctx (glusterfs_ctx_t *ctx)
+struct glfs *glfs_new_from_ctx (glusterfs_vol_ctx_t *ctx)
         GFAPI_PRIVATE(glfs_new_from_ctx, 3.7.0);
 
 /*

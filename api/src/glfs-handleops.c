@@ -1906,7 +1906,7 @@ pub_glfs_h_poll_upcall (struct glfs *fs, struct callback_arg *up_arg)
         xlator_t                            *subvol         = NULL;
         int                                 found           = 0;
         int                                 reason          = 0;
-        glusterfs_ctx_t                     *ctx            = NULL;
+        glusterfs_vol_ctx_t                 *ctx            = NULL;
         int                                 ret             = -1;
         struct gf_upcall                    *upcall_data    = NULL;
 
