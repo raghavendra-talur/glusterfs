@@ -1,0 +1,8 @@
+#!/bin/bash
+mkdir -p /rtalurmnt/xcube/{fuse,cifs,nfs}
+mount | grep xcube | grep -q \/rtalurmnt\/fuse
+if [ $? -ne 0 ]
+then
+        mount -t glusterfs `hostname`:/xcube /rtalurmnt/xcube/fuse
+fi
+

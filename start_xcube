@@ -1,0 +1,7 @@
+#!/bin/bash
+gluster vol info xcube | grep  -q "Status: Started" -
+if [ $? -ne 0 ]
+then
+        gluster --mode=script --wignore volume start xcube
+fi
+

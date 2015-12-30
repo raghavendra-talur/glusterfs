@@ -1,0 +1,12 @@
+#!/bin/bash
+glusterd
+gluster vol info xcube
+if [ $? -ne 0 ]
+then
+        mkdir -p /d/brick{1..8}/brick
+        gluster --mode=script --wignore volume create xcube `hostname`:/d/brick1/brick
+fi
+
+
+
+
