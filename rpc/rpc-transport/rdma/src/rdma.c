@@ -685,20 +685,18 @@ static gf_rdma_device_t *
 gf_rdma_get_device (rpc_transport_t *this, struct ibv_context *ibctx,
                     char *device_name)
 {
-        glusterfs_ctx_t   *ctx      = NULL;
-        gf_rdma_private_t *priv     = NULL;
-        gf_rdma_options_t *options  = NULL;
-        int32_t            ret      = 0;
-        int32_t            i        = 0;
-        gf_rdma_device_t  *trav     = NULL, *device = NULL;
-        gf_rdma_ctx_t     *rdma_ctx = NULL;
-        struct iobuf_pool *iobuf_pool = NULL;
+        gf_rdma_private_t     *priv     = NULL;
+        gf_rdma_options_t     *options  = NULL;
+        int32_t                ret      = 0;
+        int32_t                i        = 0;
+        gf_rdma_device_t      *trav     = NULL, *device = NULL;
+        gf_rdma_ctx_t         *rdma_ctx = NULL;
+        struct iobuf_pool     *iobuf_pool = NULL;
 
         priv        = this->private;
         options     = &priv->options;
-        ctx         = this->ctx;
-        rdma_ctx    = ctx->ib;
-        iobuf_pool = ctx->iobuf_pool;
+        rdma_ctx    = process_ctx.ib;
+        iobuf_pool  = process_ctx.rp.iobuf_pool;
 
         trav = rdma_ctx->device;
 
@@ -3403,7 +3401,7 @@ gf_rdma_decode_error_msg (gf_rdma_peer_t *peer, gf_rdma_post_t *post,
         rpc_msg.rm_direction = REPLY;
         rpc_msg.rm_reply.rp_stat = MSG_DENIED;
 
-        iobuf = iobuf_get2 (peer->trans->ctx->iobuf_pool, bytes_in_post);
+        iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, bytes_in_post);
         if (iobuf == NULL) {
                 ret = -1;
                 goto out;
@@ -3528,7 +3526,7 @@ gf_rdma_decode_msg (gf_rdma_peer_t *peer, gf_rdma_post_t *post,
                 header_len = (long)ptr - (long)post->buf;
                 post->ctx.vector[0].iov_len = (bytes_in_post - header_len);
 
-                post->ctx.hdr_iobuf = iobuf_get2 (peer->trans->ctx->iobuf_pool,
+                post->ctx.hdr_iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool,
                                                   (bytes_in_post - header_len));
                 if (post->ctx.hdr_iobuf == NULL) {
                         ret = -1;
@@ -3642,7 +3640,7 @@ gf_rdma_do_reads (gf_rdma_peer_t *peer, gf_rdma_post_t *post,
 
         post->ctx.gf_rdma_reads = i;
         i = 0;
-        iobuf = iobuf_get2 (peer->trans->ctx->iobuf_pool, size);
+        iobuf = iobuf_get2 (process_ctx.rp.iobuf_pool, size);
         if (iobuf == NULL) {
                 goto out;
         }
@@ -4618,10 +4616,8 @@ gf_rdma_init (rpc_transport_t *this)
 {
         gf_rdma_private_t   *priv    = NULL;
         int32_t              ret     = 0;
-        glusterfs_ctx_t     *ctx     = NULL;
         gf_rdma_options_t   *options = NULL;
 
-        ctx = this->ctx;
 
         priv = this->private;
 
@@ -4641,16 +4637,16 @@ gf_rdma_init (rpc_transport_t *this)
         pthread_mutex_init (&priv->recv_mutex, NULL);
         pthread_cond_init (&priv->recv_cond, NULL);
 
-        pthread_mutex_lock (&ctx->lock);
+        pthread_mutex_lock (&process_ctx.lock);
         {
-                if (ctx->ib == NULL) {
-                        ctx->ib = __gf_rdma_ctx_create ();
-                        if (ctx->ib == NULL) {
+                if (process_ctx.ib == NULL) {
+                        process_ctx.ib = __gf_rdma_ctx_create ();
+                        if (process_ctx.ib == NULL) {
                                 ret = -1;
                         }
                 }
         }
-        pthread_mutex_unlock (&ctx->lock);
+        pthread_mutex_unlock (&process_ctx.lock);
 
         return ret;
 }
@@ -4704,7 +4700,7 @@ gf_rdma_connect (struct rpc_transport *this, int port)
                 goto out;
         }
 
-        rdma_ctx = this->ctx->ib;
+        rdma_ctx = process_ctx.ib;
 
         pthread_mutex_lock (&priv->write_mutex);
         {
@@ -4792,7 +4788,7 @@ gf_rdma_listen (rpc_transport_t *this)
 
         priv->entity = GF_RDMA_SERVER_LISTENER;
 
-        rdma_ctx = this->ctx->ib;
+        rdma_ctx = process_ctx.ib;
 
         ret = gf_rdma_server_get_local_sockaddr (this, &sock_union.sa,
                                                  &sockaddr_len);
@@ -4898,12 +4894,12 @@ init (rpc_transport_t *this)
                 GF_FREE (priv);
                 return -1;
         }
-        rdma_ctx = this->ctx->ib;
+        rdma_ctx = process_ctx.ib;
         pthread_mutex_lock (&rdma_ctx->lock);
         {
                 if (rdma_ctx != NULL) {
                         if (this->dl_handle && (++(rdma_ctx->dlcount)) == 1) {
-                        iobuf_pool = this->ctx->iobuf_pool;
+                        iobuf_pool = process_ctx.rp.iobuf_pool;
                         iobuf_pool->rdma_registration = gf_rdma_register_arena;
                         iobuf_pool->rdma_deregistration =
                                                       gf_rdma_deregister_arena;
@@ -4938,14 +4934,14 @@ fini (struct rpc_transport *this)
                 GF_FREE (priv);
         }
 
-        rdma_ctx = this->ctx->ib;
+        rdma_ctx = process_ctx.ib;
         if (!rdma_ctx)
                 return;
 
         pthread_mutex_lock (&rdma_ctx->lock);
         {
                 if (this->dl_handle && (--(rdma_ctx->dlcount)) == 0) {
-                        iobuf_pool = this->ctx->iobuf_pool;
+                        iobuf_pool = process_ctx.rp.iobuf_pool;
                         gf_rdma_deregister_iobuf_pool (rdma_ctx->device);
                         iobuf_pool->rdma_registration = NULL;
                         iobuf_pool->rdma_deregistration = NULL;
