@@ -1763,6 +1763,29 @@ out:
 }
 
 static int
+brick_graph_add_sr (volgen_graph_t *graph, glusterd_volinfo_t *volinfo,
+                    dict_t *set_dict, glusterd_brickinfo_t *brickinfo)
+{
+        xlator_t        *xl     = NULL;
+        int              ret    = -1;
+
+        if (!graph || !volinfo || !set_dict)
+                goto out;
+
+        xl = volgen_graph_add (graph, "features/sr",
+                                volinfo->volname);
+        if (!xl) {
+                gf_msg_debug ("glusterd", 0,
+                              "failed to add features/sr to graph");
+                goto out;
+        }
+
+        ret = 0;
+out:
+        return ret;
+}
+
+static int
 brick_graph_add_locks (volgen_graph_t *graph, glusterd_volinfo_t *volinfo,
                         dict_t *set_dict, glusterd_brickinfo_t *brickinfo)
 {
@@ -2411,6 +2434,7 @@ static volgen_brick_xlator_t server_graph_table[] = {
         {brick_graph_add_fdl, "fdl"},
         {brick_graph_add_iot, "io-threads"},
         {brick_graph_add_upcall, "upcall"},
+        {brick_graph_add_sr, "sr"},
         {brick_graph_add_pump, NULL},
         {brick_graph_add_locks, "locks"},
         {brick_graph_add_acl, "acl"},
