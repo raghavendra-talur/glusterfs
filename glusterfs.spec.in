@@ -1086,6 +1086,7 @@ exit 0
 %endif
 %{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/features/index.so
 %{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/features/locks.so
+%{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/features/sr.so
 %{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/features/posix*
 %{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/features/snapview-server.so
 %{_libdir}/glusterfs/%{version}%{?prereltag}/xlator/features/marker.so

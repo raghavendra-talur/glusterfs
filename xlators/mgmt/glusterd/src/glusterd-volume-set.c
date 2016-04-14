@@ -2773,6 +2773,14 @@ struct volopt_map_entry glusterd_volopt_map[] = {
           .op_version = GD_OP_VERSION_3_7_12,
           .flags      = OPT_FLAG_CLIENT_OPT
         },
+        /* Share Reservation */
+        {
+          .key        = "features.share-reservation",
+          .voltype    = "features/sr",
+          .value      = "off",
+          .op_version = GD_OP_VERSION_4_0_0,
+        },
+
         { .key         = NULL
         }
 };
