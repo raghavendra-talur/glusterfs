@@ -672,7 +672,7 @@ pub_glfs_h_open (struct glfs *fs, struct glfs_object *object, int flags)
         GLFS_LOC_FILL_INODE (inode, loc, out);
 
         /* fop/op */
-        ret = syncop_open (subvol, &loc, flags, glfd->fd, NULL, NULL);
+        ret = syncop_open (subvol, &loc, flags, NULL, glfd->fd, NULL, NULL);
         DECODE_SYNCOP_ERR (ret);
 
         glfd->fd->flags = flags;

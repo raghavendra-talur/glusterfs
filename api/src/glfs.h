@@ -401,6 +401,45 @@ int glfs_setfsgid (gid_t fsgid) __THROW
 int glfs_setfsgroups (size_t size, const gid_t *list) __THROW
         GFAPI_PUBLIC(glfs_setfsgroups, 3.4.2);
 
+/* The open attributes object. glfs_open2/glfs_create2 take this object along
+ * with other args of glfs_open. The same object can be used for multiple
+ * open/create calls. Use the following functions to modify the object.
+ * glfs_set_share_flags()
+ */
+
+struct glfs_open_attr;
+typedef struct glfs_open_attr glfs_open_attr_t;
+
+#define GLFS_DENY_READ  0x01
+#define GLFS_DENY_WRITE 0x02
+#define GLFS_DENY_NONE  0x00
+/*
+  SYNOPSIS
+
+  glfs_set_share_flags: Set share_flags on open_attr object.
+
+  DESCRIPTION
+
+  Use this function to modify/set share flags on a open_attr object.
+
+  PARAMETERS
+
+  @open_attr: The open_attr object to be modified.
+
+  @flags: Share flags. Can be one of the following
+  GLFS_DENY_READ
+  GLFS_DENY_WRITE
+  GLFS_DENY_NONE
+
+  RETURN VALUES
+  0 : Success.
+  <0: Failure. @errno will be set with the type of failure.
+ */
+
+int glfs_set_share_flags (glfs_open_attr_t open_attr,
+                          int share_flags) __THROW
+        GFAPI_PUBLIC(glfs_open, 3.8.0);
+
 /*
   SYNOPSIS
 
@@ -429,6 +468,37 @@ int glfs_setfsgroups (size_t size, const gid_t *list) __THROW
 glfs_fd_t *glfs_open (glfs_t *fs, const char *path, int flags) __THROW
         GFAPI_PUBLIC(glfs_open, 3.4.0);
 
+/*
+  SYNOPSIS
+
+  glfs_open2: Like glfs_open but with some extra attributes that are not
+              available in posix.
+
+  DESCRIPTION
+
+  This function opens a file on a virtual mount.
+
+  PARAMETERS
+
+  @fs: The 'virtual mount' object to be initialized.
+
+  @path: Path of the file within the virtual mount.
+
+  @flags: Open flags. See open(2). O_CREAT is not supported.
+          Use glfs_creat() for creating files.
+
+  @open_attributes
+
+  RETURN VALUES
+
+  NULL   : Failure. @errno will be set with the type of failure.
+  Others : Pointer to the opened glfs_fd_t.
+
+ */
+
+glfs_fd_t *glfs_open2 (glfs_t *fs, const char *path, int flags,
+                       glfs_open_attr_t open_attr) __THROW
+        GFAPI_PUBLIC(glfs_open2, 3.8.0);
 
 /*
   SYNOPSIS

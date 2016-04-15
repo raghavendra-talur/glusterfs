@@ -157,8 +157,10 @@ glfs_loc_unlink (loc_t *loc)
 }
 
 
+
 struct glfs_fd *
-pub_glfs_open (struct glfs *fs, const char *path, int flags)
+glfs_open_common (struct glfs *fs, const char *path, int flags,
+                  int share_flags)
 {
 	int              ret = -1;
 	struct glfs_fd  *glfd = NULL;
@@ -217,7 +219,8 @@ retry:
 	}
         glfd->fd->flags = flags;
 
-	ret = syncop_open (subvol, &loc, flags, glfd->fd, NULL, NULL);
+	ret = syncop_open (subvol, &loc, flags, share_flags, glfd->fd,
+                           NULL, NULL);
         DECODE_SYNCOP_ERR (ret);
 
 	ESTALE_RETRY (ret, errno, reval, &loc, retry);
@@ -241,7 +244,45 @@ invalid_fs:
 	return glfd;
 }
 
+
+
+struct glfs_fd *
+pub_glfs_open (struct glfs *fs, const char *path, int flags)
+{
+        return glfs_open_common (fs, path, flags, NULL);
+}
+
 GFAPI_SYMVER_PUBLIC_DEFAULT(glfs_open, 3.4.0);
+
+struct glfs_fd *
+pub_glfs_open2 (struct glfs *fs, const char *path, int flags,
+                glfs_open_attr_t *open_attr)
+{
+        return glfs_open_common (fs, path, flags, open_attr->share_flags);
+}
+
+GFAPI_SYMVER_PUBLIC_DEFAULT(glfs_open2, 3.8.0);
+
+
+int
+pub_glfs_set_share_flags (glfs_open_attr_t *open_attr, int share_flags)
+{
+        int             ret = -1;
+
+        if (!open_attr) {
+                ret = -1;
+                errno = EINVAL;
+                goto out;
+        }
+
+        open_attr->share_flags = share_flags;
+        ret = 0;
+
+out:
+        return ret;
+}
+
+GFAPI_SYMVER_PUBLIC_DEFAULT(glfs_set_share_flags, 3.8.0);
 
 int
 pub_glfs_close (struct glfs_fd *glfd)
@@ -416,7 +457,8 @@ GFAPI_SYMVER_PUBLIC_DEFAULT(glfs_fstat, 3.4.0);
 
 
 struct glfs_fd *
-pub_glfs_creat (struct glfs *fs, const char *path, int flags, mode_t mode)
+glfs_creat_common (struct glfs *fs, const char *path, int flags, mode_t mode,
+                   int share_flags)
 {
 	int              ret = -1;
 	struct glfs_fd  *glfd = NULL;
@@ -522,7 +564,8 @@ retry:
         glfd->fd->flags = flags;
 
 	if (ret == 0) {
-		ret = syncop_open (subvol, &loc, flags, glfd->fd, NULL, NULL);
+		ret = syncop_open (subvol, &loc, flags, share_flags, glfd->fd,
+                                   NULL, NULL);
                 DECODE_SYNCOP_ERR (ret);
 	} else {
 		ret = syncop_create (subvol, &loc, flags, mode, glfd->fd,
@@ -555,6 +598,22 @@ out:
 
 invalid_fs:
 	return glfd;
+}
+
+
+struct glfs_fd *
+pub_glfs_creat (struct glfs *fs, const char *path, int flags, mode_t mode)
+{
+        return glfs_creat_common (fs, path, flags, mode, NULL);
+}
+
+GFAPI_SYMVER_PUBLIC_DEFAULT(glfs_creat, 3.4.0);
+
+struct glfs_fd *
+pub_glfs_creat2 (struct glfs *fs, const char *path, int flags, mode_t mode,
+                int share_flags)
+{
+        return glfs_creat_common (fs, path, flags, mode, share_flags);
 }
 
 GFAPI_SYMVER_PUBLIC_DEFAULT(glfs_creat, 3.4.0);

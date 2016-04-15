@@ -230,6 +230,10 @@ struct glfs_fd {
 	struct dirent     *readdirbuf;
 };
 
+struct glfs_open_attr {
+        int share_flags;
+};
+
 /* glfs object handle introduced for the alternate gfapi implementation based
    on glfs handles/gfid/inode
 */

@@ -681,7 +681,7 @@ glfs_migrate_fd_safe (struct glfs *fs, xlator_t *newsubvol, fd_t *oldfd)
 	else
 		ret = syncop_open (newsubvol, &loc,
 				   oldfd->flags & ~(O_TRUNC|O_EXCL|O_CREAT),
-				   newfd, NULL, NULL);
+                                   NULL, newfd, NULL, NULL);
         DECODE_SYNCOP_ERR (ret);
 	loc_wipe (&loc);
 
