@@ -144,7 +144,7 @@ int32_t
 cluster_open (xlator_t **subvols, unsigned char *on, int numsubvols,
               default_args_cbk_t *replies, unsigned char *output,
               call_frame_t *frame, xlator_t *this, loc_t *loc, int32_t flags,
-              fd_t *fd, dict_t *xdata);
+              int32_t share_flags, fd_t *fd, dict_t *xdata);
 
 int
 cluster_tryinodelk (xlator_t **subvols, unsigned char *on, int numsubvols,

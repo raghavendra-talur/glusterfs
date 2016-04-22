@@ -76,6 +76,7 @@ typedef struct {
         gf_seek_what_t what;
         dict_t *xdata;
         struct gf_lease lease;
+        int share_flags;
 } default_args_t;
 
 typedef struct {
@@ -188,8 +189,8 @@ int32_t default_create (call_frame_t *frame, xlator_t *this,
 int32_t default_open (call_frame_t *frame,
                       xlator_t *this,
                       loc_t *loc,
-                      int32_t flags, fd_t *fd,
-                      dict_t *xdata);
+                      int32_t flags, int32_t share_flags,
+                      fd_t *fd, dict_t *xdata);
 
 int32_t default_readv (call_frame_t *frame,
                        xlator_t *this,
@@ -425,7 +426,8 @@ int32_t default_create_resume (call_frame_t *frame, xlator_t *this,
 int32_t default_open_resume (call_frame_t *frame,
                              xlator_t *this,
                              loc_t *loc,
-                             int32_t flags, fd_t *fd, dict_t *xdata);
+                             int32_t flags, int32_t share_flags,
+                             fd_t *fd, dict_t *xdata);
 
 int32_t default_readv_resume (call_frame_t *frame,
                               xlator_t *this,

@@ -421,8 +421,8 @@ int syncop_create (xlator_t *subvol, loc_t *loc, int32_t flags, mode_t mode,
                    fd_t *fd, struct iatt *iatt,
                    dict_t *xdata_in, dict_t **xdata_out);
 
-int syncop_open (xlator_t *subvol, loc_t *loc, int32_t flags, fd_t *fd,
-		 dict_t *xdata_in, dict_t **xdata_out);
+int syncop_open (xlator_t *subvol, loc_t *loc, int32_t flags, int32_t share_flags,
+                fd_t *fd, dict_t *xdata_in, dict_t **xdata_out);
 
 int syncop_close (fd_t *fd);
 

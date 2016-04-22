@@ -646,7 +646,8 @@ out:
 
 call_stub_t *
 fop_open_stub (call_frame_t *frame, fop_open_t fn,
-               loc_t *loc, int32_t flags, fd_t *fd, dict_t *xdata)
+               loc_t *loc, int32_t flags, int32_t share_flags,
+               fd_t *fd, dict_t *xdata)
 {
         call_stub_t *stub = NULL;
 
@@ -657,7 +658,7 @@ fop_open_stub (call_frame_t *frame, fop_open_t fn,
         GF_VALIDATE_OR_GOTO ("call-stub", stub, out);
 
         stub->fn.open = fn;
-        args_open_store (&stub->args, loc, flags, fd, xdata);
+        args_open_store (&stub->args, loc, flags, share_flags, fd, xdata);
 out:
         return stub;
 }
@@ -1890,6 +1891,7 @@ call_resume_wind (call_stub_t *stub)
         case GF_FOP_OPEN:
                 stub->fn.open (stub->frame, stub->frame->this,
 			       &stub->args.loc, stub->args.flags,
+                               stub->args.share_flags,
 			       stub->args.fd, stub->args.xdata);
                 break;
         case GF_FOP_CREATE:

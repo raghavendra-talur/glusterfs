@@ -342,6 +342,7 @@ fop_open_stub (call_frame_t *frame,
 	       fop_open_t fn,
 	       loc_t *loc,
 	       int32_t flags,
+               int32_t share_flags,
 	       fd_t *fd,
                dict_t *xdata);
 

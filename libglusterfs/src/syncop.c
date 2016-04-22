@@ -1857,13 +1857,13 @@ syncop_open_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
 }
 
 int
-syncop_open (xlator_t *subvol, loc_t *loc, int32_t flags, fd_t *fd,
-	     dict_t *xdata_in, dict_t **xdata_out)
+syncop_open (xlator_t *subvol, loc_t *loc, int32_t flags, int32_t share_flags,
+             fd_t *fd, dict_t *xdata_in, dict_t **xdata_out)
 {
         struct syncargs args = {0, };
 
         SYNCOP (subvol, (&args), syncop_open_cbk, subvol->fops->open,
-                loc, flags, fd, xdata_in);
+                loc, flags, share_flags, fd, xdata_in);
 
         if (xdata_out)
                 *xdata_out = args.xdata;

@@ -694,10 +694,10 @@ int32_t
 cluster_open (xlator_t **subvols, unsigned char *on, int numsubvols,
               default_args_cbk_t *replies, unsigned char *output,
               call_frame_t *frame, xlator_t *this, loc_t *loc, int32_t flags,
-              fd_t *fd, dict_t *xdata)
+              int32_t share_flags, fd_t *fd, dict_t *xdata)
 {
         FOP_ONLIST (subvols, on, numsubvols, replies, output, frame, open, loc,
-                    flags, fd, xdata);
+                    flags, share_flags, fd, xdata);
         return fop_success_fill (replies, numsubvols, output);
 }
 

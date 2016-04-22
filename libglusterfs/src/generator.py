@@ -165,6 +165,7 @@ ops['readv'] = (
 ops['open'] = (
 	('fop-arg',	'loc',			'loc_t *'),
 	('fop-arg',	'flags',		'int32_t'),
+	('fop-arg',	'share_flags',		'int32_t'),
 	('fop-arg',	'fd',			'fd_t *'),
 	('fop-arg',	'xdata',		'dict_t *'),
 	('cbk-arg',	'fd',			'fd_t *'),

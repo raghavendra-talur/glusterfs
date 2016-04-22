@@ -531,7 +531,7 @@ typedef int32_t (*fop_create_t) (call_frame_t *frame, xlator_t *this,
 #define GF_OPEN_NOWB    0x02
 
 typedef int32_t (*fop_open_t) (call_frame_t *frame, xlator_t *this,
-                               loc_t *loc, int32_t flags,
+                               loc_t *loc, int32_t flags, int32_t share_flags,
                                fd_t *fd, dict_t *xdata);
 
 typedef int32_t (*fop_readv_t) (call_frame_t *frame,

@@ -337,7 +337,7 @@ args_create_store (default_args_t *args,
 
 int
 args_open_store (default_args_t *args, loc_t *loc, int32_t flags,
-                 fd_t *fd, dict_t *xdata);
+                 int32_t share_flags, fd_t *fd, dict_t *xdata);
 
 int
 args_readv_store (default_args_t *args, fd_t *fd, size_t size, off_t off,

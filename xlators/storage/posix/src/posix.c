@@ -2867,7 +2867,8 @@ out:
 
 int32_t
 posix_open (call_frame_t *frame, xlator_t *this,
-            loc_t *loc, int32_t flags, fd_t *fd, dict_t *xdata)
+            loc_t *loc, int32_t flags, int32_t share_flags,
+            fd_t *fd, dict_t *xdata)
 {
         int32_t               op_ret       = -1;
         int32_t               op_errno     = 0;

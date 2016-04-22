@@ -496,10 +496,11 @@ args_create_cbk_store (default_args_cbk_t *args,
 
 int
 args_open_store (default_args_t *args, loc_t *loc, int32_t flags,
-                 fd_t *fd, dict_t *xdata)
+                 int32_t share_flags, fd_t *fd, dict_t *xdata)
 {
         loc_copy (&args->loc, loc);
         args->flags = flags;
+        args->share_flags = share_flags;
         if (fd)
                 args->fd = fd_ref (fd);
         if (xdata)
