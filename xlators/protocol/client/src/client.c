@@ -1204,6 +1204,77 @@ out:
 	return 0;
 }
 
+void
+__client_rpc_set_connecting (clnt_conf_t *conf, client_connection_t connection)
+{
+        conf->connecting = connection;
+}
+
+void
+client_rpc_set_connecting (clnt_conf_t *conf, client_connection_t connection)
+{
+
+        pthread_mutex_lock (&conf->lock);
+        {
+                __client_rpc_set_connecting (conf, connection);
+        }
+        pthread_mutex_unlock (&conf->lock);
+
+}
+
+void
+__client_rpc_set_connected (clnt_conf_t *conf, client_connection_t connection)
+{
+        conf->connected = connection;
+}
+
+void
+client_rpc_set_connected (clnt_conf_t *conf, client_connection_t connection)
+{
+
+        pthread_mutex_lock (&conf->lock);
+        {
+                __client_rpc_set_connected (conf, connection);
+        }
+        pthread_mutex_unlock (&conf->lock);
+
+}
+
+
+client_connection_t
+__client_rpc_get_connecting (clnt_conf_t *conf)
+{
+        return conf->connecting;
+}
+
+client_connection_t
+client_rpc_get_connecting (clnt_conf_t *conf)
+
+        pthread_mutex_lock (&conf->lock);
+        {
+                __client_rpc_get_connecting (conf);
+        }
+        pthread_mutex_unlock (&conf->lock);
+
+}
+
+client_connection_t
+__client_rpc_get_connected (clnt_conf_t *conf)
+{
+        return conf->connected;
+}
+
+client_connection_t
+client_rpc_get_connected (clnt_conf_t *conf)
+
+        pthread_mutex_lock (&conf->lock);
+        {
+                __client_rpc_get_connected (conf);
+        }
+        pthread_mutex_unlock (&conf->lock);
+
+}
+
 static gf_boolean_t
 is_client_rpc_init_command (dict_t *dict, xlator_t *this,
                             char **value)
@@ -2204,7 +2275,101 @@ client_mark_fd_bad (xlator_t *this)
 
 
 int
-client_rpc_notify (struct rpc_clnt *rpc, void *mydata, rpc_clnt_event_t event,
+client_glusterd_rpc_notify (struct rpc_clnt *rpc, void *mydata,
+                            rpc_clnt_event_t event, void *data)
+{
+        xlator_t *this = NULL;
+        clnt_conf_t  *conf = NULL;
+        int ret = 0;
+
+        this = mydata;
+        if (!this || !this->private) {
+                gf_msg ("client", GF_LOG_ERROR, EINVAL, PC_MSG_INVALID_ENTRY,
+                        (this != NULL) ?
+                        "private structure of the xlator is NULL":
+                        "xlator is NULL");
+                goto out;
+        }
+
+        conf = this->private;
+        gf_msg_debug (this->name, 0, "client_glusterd_rpc_notify called");
+
+        switch (event) {
+        case RPC_CLNT_CONNECT:
+        {
+                client_rpc_set_connecting (GF_CLIENT_GLUSTERD)
+                gf_msg_debug (this->name, 0, "got RPC_CLNT_CONNECT "
+                                             "on glusterd rpc");
+
+                ret = client_handshake (this, rpc);
+                if (ret)
+                        gf_msg (this->name, GF_LOG_WARNING, 0,
+                                PC_MSG_HANDSHAKE_RETURN, "handshake "
+                                "msg returned %d", ret);
+
+                break;
+        }
+        case RPC_CLNT_DISCONNECT:
+                gf_msg_debug (this->name, 0, "got RPC_CLNT_DISCONNECT"
+                                             "on glusterd rpc");
+
+                pthread_mutex_lock (&conf->lock);
+                {
+                        if ((client_rpc_get_connected == GF_CLIENT_GLUSTERD) &&
+                            (conf->portmap_success){
+                                __client_rpc_set_connected (GF_CLIENT_NONE); conf->connected = 0;
+                                conf->portmap_success = 0;
+
+                                if (conf->quick_reconnect) {
+                                        conf->quick_reconnect = 0;
+                                        rpc_clnt_start (rpc);
+
+                                } else {
+                                        rpc->conn.config.remote_port = 0;
+
+                                }
+
+
+                        if (!conf->disconnect_err_logged) {
+                                gf_msg (this->name, GF_LOG_INFO, 0,
+                                        PC_MSG_CLIENT_DISCONNECTED,
+                                        "disconnected from %s. Client "
+                                        "process will keep trying to "
+                                        "connect to glusterd until "
+                                        "brick's port is available",
+                                        conf->rpc->conn.name);
+                        } else {
+                               gf_msg_debug (this->name, 0,
+                                             "disconnected from %s. "
+                                             "Client process will keep"
+                                             " trying to connect to "
+                                             "glusterd until brick's "
+                                             "port is available",
+                                             conf->rpc->conn.name);
+                        }
+                        if (conf->portmap_err_logged)
+                                conf->disconnect_err_logged = 1;
+                }
+
+
+                break;
+
+        case RPC_CLNT_DESTROY:
+                ret = client_fini_complete (this);
+                break;
+
+        default:
+                gf_msg_trace (this->name, 0,
+                              "got some other RPC event %d", event);
+
+                break;
+        }
+
+out:
+        return 0;
+}
+int
+client_brick_rpc_notify (struct rpc_clnt *rpc, void *mydata, rpc_clnt_event_t event,
                    void *data)
 {
         xlator_t *this = NULL;
@@ -2512,36 +2677,64 @@ client_init_rpc (xlator_t *this)
 
         conf = this->private;
 
-        if (conf->rpc) {
+        if (conf->glusterd_rpc) {
                 gf_msg (this->name, GF_LOG_WARNING, 0,
-                        PC_MSG_RPC_INITED_ALREADY, "client rpc already "
+                        PC_MSG_RPC_INITED_ALREADY, "glusterd rpc already "
+                        "init'ed");
+                ret = -1;
+                goto out;
+        }
+        if (conf->brick_rpc) {
+                gf_msg (this->name, GF_LOG_WARNING, 0,
+                        PC_MSG_RPC_INITED_ALREADY, "brick rpc already "
                         "init'ed");
                 ret = -1;
                 goto out;
         }
 
-        conf->rpc = rpc_clnt_new (this->options, this, this->name, 0);
+        conf->glusterd_rpc = rpc_clnt_new (this->options, this, this->name, 0);
         if (!conf->rpc) {
                 gf_msg (this->name, GF_LOG_ERROR, 0, PC_MSG_RPC_INIT_FAILED,
-                        "failed to initialize RPC");
+                        "failed to initialize glusterd RPC");
+                goto out;
+        }
+        conf->brick_rpc = rpc_clnt_new (this->options, this, this->name, 0);
+        if (!conf->rpc) {
+                gf_msg (this->name, GF_LOG_ERROR, 0, PC_MSG_RPC_INIT_FAILED,
+                        "failed to initialize brick RPC");
                 goto out;
         }
 
-        ret = rpc_clnt_register_notify (conf->rpc, client_rpc_notify, this);
+        ret = rpc_clnt_register_notify (conf->glusterd_rpc,
+                                        client_glusterd_rpc_notify, this);
         if (ret) {
                 gf_msg (this->name, GF_LOG_ERROR, 0, PC_MSG_RPC_NOTIFY_FAILED,
-                        "failed to register notify");
+                        "failed to register notify for glusterd rpc");
+                goto out;
+        }
+        ret = rpc_clnt_register_notify (conf->brick_rpc,
+                                        client_brick_rpc_notify, this);
+        if (ret) {
+                gf_msg (this->name, GF_LOG_ERROR, 0, PC_MSG_RPC_NOTIFY_FAILED,
+                        "failed to register notify for brick rpc");
                 goto out;
         }
 
         conf->handshake = &clnt_handshake_prog;
         conf->dump      = &clnt_dump_prog;
 
-        ret = rpcclnt_cbk_program_register (conf->rpc, &gluster_cbk_prog,
+        ret = rpcclnt_cbk_program_register (conf->glusterd_rpc,
+                                            &gluster_cbk_prog, this);
+        if (ret) {
+                gf_msg (this->name, GF_LOG_ERROR, 0, PC_MSG_RPC_CBK_FAILED,
+                        "failed to register callback program for glusterd rpc");
+                goto out;
+        }
+        ret = rpcclnt_cbk_program_register (conf->brick_rpc, &gluster_cbk_prog,
                                             this);
         if (ret) {
                 gf_msg (this->name, GF_LOG_ERROR, 0, PC_MSG_RPC_CBK_FAILED,
-                        "failed to register callback program");
+                        "failed to register callback program for brick rpc");
                 goto out;
         }
 

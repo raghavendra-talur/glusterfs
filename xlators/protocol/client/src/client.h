@@ -43,6 +43,12 @@ typedef enum {
         FALLBACK_TO_ANON_FD = 1
 } clnt_remote_fd_flags_t;
 
+typedef enum {
+        GF_CLIENT_NONE,
+        GF_CLIENT_GLUSTERD,
+        GF_CLIENT_BRICK,
+} client_connection_t;
+
 #define CPD_REQ_FIELD(v,f)  (v)->compound_req_u.compound_##f##_req
 #define CPD_RSP_FIELD(v,f)  (v)->compound_rsp_u.compound_##f##_rsp
 
@@ -135,15 +141,9 @@ typedef enum {
         } while (0)
 
 
-struct clnt_options {
-        char *remote_subvolume;
-        int   ping_timeout;
-};
-
 typedef struct clnt_conf {
-        struct rpc_clnt       *rpc;
-        struct clnt_options    opt;
-        struct rpc_clnt_config rpc_conf;
+        struct rpc_clnt       *glusterd_rpc;
+        struct rpc_clnt       *brick_rpc;
 	struct list_head       saved_fds;
         pthread_mutex_t        lock;
         int                    connecting;
@@ -158,7 +158,7 @@ typedef struct clnt_conf {
         uint64_t               reopen_fd_count; /* Count of fds reopened after a
                                                    connection is established */
         gf_lock_t              rec_lock;
-        int                    skip_notify;
+        int                    portmap_success;
 
         int                    last_sent_event; /* Flag used to make sure we are
                                                    not repeating the same event
@@ -204,6 +204,7 @@ typedef struct clnt_conf {
 
         gf_boolean_t           child_up; /* Set to true, when child is up, and
                                           * false, when child is down */
+        char                  *remote_subvolume;
 } clnt_conf_t;
 
 typedef struct _client_fd_ctx {

@@ -1546,6 +1546,7 @@ client_query_portmap_cbk (struct rpc_req *req, struct iovec *iov, int count, voi
         conf->disconnect_err_logged = 0;
         config.remote_port = rsp.port;
         rpc_clnt_reconfig (conf->rpc, &config);
+        //call rpc_clnt_
 
         conf->skip_notify = 1;
 	conf->quick_reconnect = 1;
@@ -1645,6 +1646,7 @@ client_dump_version_cbk (struct rpc_req *req, struct iovec *iov, int count,
         }
 
         if (server_has_portmap (frame->this, rsp.prog) == 0) {
+                client_rpc_set_connected (GF_CLIENT_CONN_GLUSTERD);
                 ret = client_query_portmap (frame->this, conf->rpc);
                 goto out;
         }
